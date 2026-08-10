@@ -1,0 +1,23 @@
+# Python
+python/.venv/
+python/venv/
+python/__pycache__/
+python/etl/__pycache__/
+python/analytics/__pycache__/
+python/dashboard/__pycache__/
+*.pyc
+python/.env
+
+# Java
+java-api/target/
+*.class
+
+# Data (no subir tu historial personal de Spotify a GitHub)
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# IDE
+.vscode/
+.idea/
