@@ -11,6 +11,7 @@ python/.env
 # Java
 java-api/target/
 *.class
+java-api/src/main/resources/application.properties
 
 # Data (no subir tu historial personal de Spotify a GitHub)
 data/raw/*
