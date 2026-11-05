@@ -1,12 +1,22 @@
 package com.spotifywrapped.api.repository;
 
-import com.spotifywrapped.api.dto.*;
-import com.spotifywrapped.api.model.Play;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.stereotype.Repository;
-import java.util.List;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import com.spotifywrapped.api.dto.ArtistRanking;
+import com.spotifywrapped.api.dto.HourlyPattern;
+import com.spotifywrapped.api.dto.ListeningStreak;
+import com.spotifywrapped.api.dto.SkipRate;
+import com.spotifywrapped.api.dto.TopAlbum;
+import com.spotifywrapped.api.dto.TopTrack;
+import com.spotifywrapped.api.dto.WeekdayPattern;
+import com.spotifywrapped.api.dto.WrappedSummary;
+import com.spotifywrapped.api.dto.YearlyTopArtist;
+import com.spotifywrapped.api.model.Play;
 
 @Repository
 public interface PlayRepository extends JpaRepository<Play, Long> {
@@ -33,7 +43,7 @@ public interface PlayRepository extends JpaRepository<Play, Long> {
     JOIN tracks t   ON p.track_id = t.track_id
     JOIN artists a  ON t.artist_id = a.artist_id
     GROUP BY a.artist_name
-    ORDER BY minutosTotales DESC
+    ORDER BY reproducciones DESC
     OFFSET 0 ROWS FETCH NEXT :limite ROWS ONLY
     """, nativeQuery = true)
     List<ArtistRanking> obtenerTopArtistas(@Param("limite") int limite);
@@ -43,17 +53,18 @@ public interface PlayRepository extends JpaRepository<Play, Long> {
         SELECT
             YEAR(p.played_at) AS anio,
             a.artist_name AS artistName,
+            COUNT(*) AS reproducciones,
             SUM(CAST(p.ms_played AS BIGINT)) / 1000.0 / 60 AS minutos,
             RANK() OVER (
                 PARTITION BY YEAR(p.played_at)
-                ORDER BY SUM(CAST(p.ms_played AS BIGINT)) DESC
+                ORDER BY COUNT(*) DESC
             ) AS ranking
         FROM plays p
         JOIN tracks t   ON p.track_id = t.track_id
         JOIN artists a  ON t.artist_id = a.artist_id
         GROUP BY YEAR(p.played_at), a.artist_name
     )
-    SELECT anio, artistName, ROUND(minutos, 1) AS minutos
+    SELECT anio, artistName, reproducciones, ROUND(minutos, 1) AS minutos
     FROM ranking_por_anio
     WHERE ranking = 1
     ORDER BY anio
@@ -115,4 +126,83 @@ List<WeekdayPattern> obtenerPatronPorDiaSemana();
     FROM plays
     """, nativeQuery = true)
 SkipRate obtenerTasaSkip();
+
+@Query(value = """
+    SELECT
+        t.track_name AS trackName,
+        a.artist_name AS artistName,
+        COUNT(*) AS reproducciones,
+        SUM(CAST(p.ms_played AS BIGINT)) / 1000.0 / 60 AS minutos
+    FROM plays p
+    JOIN tracks t   ON p.track_id = t.track_id
+    JOIN artists a  ON t.artist_id = a.artist_id
+    WHERE YEAR(p.played_at) = :anio
+    GROUP BY t.track_name, a.artist_name
+    ORDER BY reproducciones DESC
+    OFFSET 0 ROWS FETCH NEXT :limite ROWS ONLY
+    """, nativeQuery = true)
+List<TopTrack> obtenerTopCancionesPorAnio(@Param("anio") int anio, @Param("limite") int limite);
+
+@Query(value = """
+    SELECT
+        t.album_name AS albumName,
+        a.artist_name AS artistName,
+        COUNT(*) AS reproducciones,
+        SUM(CAST(p.ms_played AS BIGINT)) / 1000.0 / 60 AS minutos
+    FROM plays p
+    JOIN tracks t   ON p.track_id = t.track_id
+    JOIN artists a  ON t.artist_id = a.artist_id
+    WHERE YEAR(p.played_at) = :anio
+        AND t.album_name IS NOT NULL
+    GROUP BY t.album_name, a.artist_name
+    ORDER BY reproducciones DESC
+    OFFSET 0 ROWS FETCH NEXT :limite ROWS ONLY
+    """, nativeQuery = true)
+List<TopAlbum> obtenerTopAlbumesPorAnio(@Param("anio") int anio, @Param("limite") int limite);
+
+@Query(value = """
+    SELECT
+        RANK() OVER (ORDER BY SUM(CAST(p.ms_played AS BIGINT)) DESC) AS ranking,
+        a.artist_name AS artistName,
+        COUNT(*) AS reproducciones,
+        SUM(CAST(p.ms_played AS BIGINT)) / 1000.0 / 60 AS minutosTotales
+    FROM plays p
+    JOIN tracks t   ON p.track_id = t.track_id
+    JOIN artists a  ON t.artist_id = a.artist_id
+    WHERE YEAR(p.played_at) = :anio
+    GROUP BY a.artist_name
+    ORDER BY reproducciones DESC
+    OFFSET 0 ROWS FETCH NEXT :limite ROWS ONLY
+    """, nativeQuery = true)
+List<ArtistRanking> obtenerTopArtistasPorAnio(@Param("anio") int anio, @Param("limite") int limite);
+@Query(value = """
+    SELECT
+        t.track_name AS trackName,
+        a.artist_name AS artistName,
+        COUNT(*) AS reproducciones,
+        SUM(CAST(p.ms_played AS BIGINT)) / 1000.0 / 60 AS minutos
+    FROM plays p
+    JOIN tracks t   ON p.track_id = t.track_id
+    JOIN artists a  ON t.artist_id = a.artist_id
+    GROUP BY t.track_name, a.artist_name
+    ORDER BY reproducciones DESC
+    OFFSET 0 ROWS FETCH NEXT :limite ROWS ONLY
+    """, nativeQuery = true)
+List<TopTrack> obtenerTopCancionesGeneral(@Param("limite") int limite);
+
+@Query(value = """
+    SELECT
+        t.album_name AS albumName,
+        a.artist_name AS artistName,
+        COUNT(*) AS reproducciones,
+        SUM(CAST(p.ms_played AS BIGINT)) / 1000.0 / 60 AS minutos
+    FROM plays p
+    JOIN tracks t   ON p.track_id = t.track_id
+    JOIN artists a  ON t.artist_id = a.artist_id
+    WHERE t.album_name IS NOT NULL
+    GROUP BY t.album_name, a.artist_name
+    ORDER BY reproducciones DESC
+    OFFSET 0 ROWS FETCH NEXT :limite ROWS ONLY
+    """, nativeQuery = true)
+List<TopAlbum> obtenerTopAlbumesGeneral(@Param("limite") int limite);
 }
