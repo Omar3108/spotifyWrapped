@@ -1,0 +1,142 @@
+/* Portada. Radios: covers 8px, bloques 12px, botones en píldora. Un solo acento: el verde. */
+.portada { background: #07170e; }
+.pt-verde { color: var(--green-bright); }
+
+/* ---------- Hero ---------- */
+.pt-hero {
+  max-width: 1280px; margin: 0 auto; overflow: clip;
+  min-height: calc(100svh - 49px);
+  padding: clamp(32px, 6vh, 64px) clamp(16px, 4vw, 40px);
+  display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: clamp(24px, 5vw, 72px); align-items: center;
+}
+.pt-hero h1 {
+  font-size: clamp(64px, 11vw, 152px); font-weight: 900; line-height: 0.98; letter-spacing: -0.035em;
+}
+.pt-linea { display: block; overflow: hidden; padding-bottom: 0.08em; }
+.pt-linea > span { display: block; }
+.pt-hero-rango { margin-top: 16px; color: #d8d8dc; font-size: clamp(16px, 2vw, 20px); min-height: 1.5em; }
+
+.pt-cifras {
+  margin: clamp(28px, 5vh, 48px) 0 0; display: grid; gap: 0 28px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.pt-cifra { padding: 14px 0; border-top: 1px solid rgba(255, 255, 255, 0.16); }
+.pt-cifra dt { color: var(--muted); font-size: 14px; }
+.pt-cifra dd {
+  margin: 4px 0 0; font-size: clamp(26px, 3.4vw, 40px); font-weight: 900;
+  font-variant-numeric: tabular-nums; letter-spacing: -0.02em;
+}
+.pt-cifra.destacada { border-top-color: var(--green-bright); }
+.pt-cifra.destacada dd { color: var(--green-bright); }
+
+.pt-mosaico { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(8px, 1.2vw, 14px); align-self: stretch; }
+.pt-mosaico-col { display: grid; gap: clamp(8px, 1.2vw, 14px); align-content: center; will-change: transform; }
+.pt-mosaico-col:nth-child(2) { margin-top: 12%; }
+.pt-mosaico .cover { font-size: 28px; box-shadow: 0 18px 40px rgba(0, 0, 0, 0.4); }
+
+/* ---------- Secciones ---------- */
+.pt-main { max-width: 1280px; margin: 0 auto; padding: 0 clamp(16px, 4vw, 40px) 40px; }
+.pt-seccion { padding: clamp(56px, 10vh, 112px) 0 0; }
+.pt-seccion h2 { font-size: clamp(32px, 5.4vw, 64px); font-weight: 900; line-height: 1.04; letter-spacing: -0.03em; text-wrap: balance; }
+.pt-subtitulo { margin: 40px 0 16px; font-size: 20px; font-weight: 800; }
+.pt-texto { margin-top: 14px; max-width: 52ch; font-size: clamp(16px, 2vw, 20px); line-height: 1.45; color: #d8d8dc; }
+.pt-dato { color: #d8d8dc; font-size: 14px; }
+.pt-cabecera { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 16px; }
+.pt-filtros { display: flex; gap: 8px; }
+.pt-filtro {
+  min-height: 40px; padding: 0 16px; font: inherit; font-size: 14px; font-weight: 600; color: var(--text);
+  background: var(--surface); border: 1px solid var(--border); border-radius: 999px; cursor: pointer;
+  transition: transform 120ms ease-out;
+}
+.pt-filtro:active { transform: scale(0.97); }
+.pt-filtro[aria-pressed="true"] { color: #04140a; background: var(--green-bright); border-color: transparent; }
+@media (hover: hover) and (pointer: fine) {
+  .pt-filtro[aria-pressed="false"]:hover { border-color: #55555c; }
+}
+/* :where() deja el reset con especificidad 0 para que los márgenes de cada lista ganen. */
+:where(.portada ol, .portada ul) { list-style: none; margin: 0; padding: 0; }
+.pt-estante:focus-visible { outline: 2px solid var(--green-bright); outline-offset: 4px; border-radius: 8px; }
+
+/* ---------- Artistas ---------- */
+.pt-podio {
+  margin-top: 36px; display: grid; gap: clamp(16px, 2.4vw, 32px); align-items: end;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr) minmax(0, 2fr);
+}
+.pt-podio-item { display: grid; gap: 6px; min-width: 0; }
+.pt-podio-item .cover { font-size: 36px; box-shadow: 0 24px 56px rgba(0, 0, 0, 0.45); margin-bottom: 8px; }
+.pt-podio-item.primero .cover { font-size: clamp(44px, 8vw, 88px); }
+.pt-podio-pos { color: var(--green-bright); font-weight: 900; font-size: 18px; }
+.pt-podio-item strong { font-size: clamp(18px, 2vw, 24px); font-weight: 800; letter-spacing: -0.02em; overflow-wrap: anywhere; }
+.pt-podio-item.primero strong { font-size: clamp(30px, 4.6vw, 56px); font-weight: 900; line-height: 1.04; }
+
+.pt-resto { margin-top: 36px; display: grid; gap: 14px clamp(24px, 4vw, 56px); grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.pt-fila { display: grid; grid-template-columns: 24px 44px minmax(0, 1fr); gap: 12px; align-items: center; }
+.pt-fila-pos { color: var(--muted); font-weight: 600; text-align: right; }
+.pt-fila .cover { font-size: 14px; }
+.pt-fila-cuerpo { display: grid; gap: 8px; min-width: 0; }
+.pt-fila-texto { display: flex; justify-content: space-between; gap: 12px; }
+.pt-fila-texto strong { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.pt-fila-texto span { color: #d8d8dc; font-size: 14px; }
+.pt-barra-relleno {
+  display: block; height: 3px; border-radius: 2px; background: var(--green-bright);
+  transform: scaleX(var(--p)); transform-origin: left;
+}
+
+/* ---------- Música ---------- */
+.pt-canciones { display: grid; gap: 14px clamp(24px, 4vw, 56px); grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.pt-cancion a, .pt-cancion > div {
+  display: grid; grid-template-columns: 24px 56px minmax(0, 1fr); gap: 12px; align-items: center;
+  color: var(--text); text-decoration: none;
+}
+.pt-cancion .cover { font-size: 18px; }
+.pt-cancion-texto { display: grid; gap: 2px; min-width: 0; }
+.pt-cancion-texto strong { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pt-cancion-texto span { color: var(--muted); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (hover: hover) and (pointer: fine) { .pt-cancion a:hover strong { color: var(--green-bright); } }
+
+.pt-estante {
+  display: grid; grid-auto-flow: column; grid-auto-columns: clamp(150px, 18vw, 220px); gap: 16px;
+  overflow-x: auto; scroll-snap-type: x proximity; padding-bottom: 12px; overscroll-behavior-x: contain;
+  scrollbar-width: thin; scrollbar-color: #3a3a40 transparent;
+}
+.pt-album { display: grid; gap: 2px; min-width: 0; scroll-snap-align: start; align-content: start; }
+.pt-album .cover { font-size: 30px; margin-bottom: 8px; box-shadow: 0 18px 40px rgba(0, 0, 0, 0.4); }
+.pt-album-pos { color: var(--green-bright); font-weight: 900; }
+.pt-album strong { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pt-album span, .pt-album small { color: var(--muted); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ---------- Evolución y hábitos ---------- */
+.pt-grafico { margin-top: 28px; }
+.pt-anios { margin-top: 28px; display: grid; gap: 0 20px; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+.pt-anio a, .pt-anio > div {
+  display: grid; gap: 2px; padding: 12px 0; color: var(--text); text-decoration: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+}
+.pt-anio strong { color: var(--green-bright); }
+.pt-anio span { color: #d8d8dc; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (hover: hover) and (pointer: fine) { .pt-anio a:hover { border-top-color: var(--green-bright); } }
+
+.pt-habitos { margin-top: 12px; display: grid; gap: clamp(20px, 4vw, 48px); grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
+.pt-habito { min-width: 0; }
+
+/* ---------- Récords ---------- */
+.pt-records { margin-top: 32px; display: grid; gap: 16px; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr); }
+.pt-record { padding: 24px; border: 1px solid var(--border); border-radius: 12px; background: rgba(255, 255, 255, 0.03); color: #d8d8dc; }
+.pt-record h3 { font-size: 16px; font-weight: 700; color: var(--muted); }
+.pt-record-cifra { margin: 12px 0 8px; font-size: clamp(40px, 5vw, 64px); font-weight: 900; line-height: 1; color: var(--text); font-variant-numeric: tabular-nums; }
+.pt-record-cifra small { font-size: 16px; font-weight: 600; color: var(--muted); margin-left: 6px; }
+.pt-record.principal { background: var(--green-bright); border-color: transparent; color: rgba(4, 20, 10, 0.8); }
+.pt-record.principal h3, .pt-record.principal .pt-record-cifra, .pt-record.principal small { color: #04140a; }
+.pt-record.principal .pt-record-cifra { font-size: clamp(56px, 8vw, 120px); }
+
+/* ---------- Móvil ---------- */
+@media (max-width: 860px) {
+  .pt-hero { grid-template-columns: minmax(0, 1fr); min-height: 0; padding-bottom: 24px; }
+  .pt-mosaico { max-height: 300px; overflow: hidden; border-radius: 12px; }
+  .pt-podio { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+  .pt-podio-item.primero { grid-column: 1 / -1; }
+  .pt-podio-item.primero .cover { width: min(70vw, 300px); }
+  .pt-resto, .pt-canciones, .pt-habitos, .pt-records { grid-template-columns: minmax(0, 1fr); }
+  .pt-estante { grid-auto-columns: 42vw; margin-right: -16px; }
+}
