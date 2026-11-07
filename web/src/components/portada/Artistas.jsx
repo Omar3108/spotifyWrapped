@@ -14,6 +14,18 @@ export function Artistas({ artistas }) {
   const resto = visibles.slice(3);
   const maximo = visibles[0]?.reproducciones ?? 1;
 
+  // Aparte del efecto de la lista: si dependiera de `limite`, los botones se animarían en cada clic.
+  // Entra mientras el hero se apaga, para que el título y los filtros no aparezcan de golpe.
+  useGSAP(
+    () => {
+      revelar(".pt-cabecera > *", ".pt-cabecera", {
+        y: 24, stagger: 0.08,
+        scrollTrigger: { trigger: ".pt-cabecera", start: "top 88%", end: "+=1", once: true },
+      });
+    },
+    { scope: raiz }
+  );
+
   useGSAP(
     () => {
       const mm = gsap.matchMedia();

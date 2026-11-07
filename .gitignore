@@ -28,3 +28,18 @@ web/node_modules/
 web/dist/
 web/test-results/
 web/playwright-report/
+
+# Secretos, certificados y logs (Docker)
+.env
+.env.*
+!.env.example
+certs/
+*.pem
+*.key
+*.crt
+*.log
+logs/
+*.bak
+
+# Contraseña del túnel
+nginx/.htpasswd

@@ -4,21 +4,54 @@
 
 /* ---------- Hero ---------- */
 .pt-hero {
-  max-width: 1280px; margin: 0 auto; overflow: clip;
+  position: relative; overflow: clip; isolation: isolate;
   min-height: calc(100svh - 49px);
+  display: grid; align-items: center;
+}
+.pt-hero-contenido {
+  position: relative; z-index: 1; width: 100%; max-width: 1280px; margin: 0 auto;
   padding: clamp(32px, 6vh, 64px) clamp(16px, 4vw, 40px);
-  display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
-  gap: clamp(24px, 5vw, 72px); align-items: center;
 }
 .pt-hero h1 {
   font-size: clamp(64px, 11vw, 152px); font-weight: 900; line-height: 0.98; letter-spacing: -0.035em;
 }
 .pt-linea { display: block; overflow: hidden; padding-bottom: 0.08em; }
 .pt-linea > span { display: block; }
-.pt-hero-rango { margin-top: 16px; color: #d8d8dc; font-size: clamp(16px, 2vw, 20px); min-height: 1.5em; }
+.pt-hero-rango { margin-top: 16px; color: #e3e6e4; font-size: clamp(16px, 2vw, 20px); min-height: 1.5em; }
+
+/* Fondo: columnas de portadas que bajan despacio. Ocupa todo el hero y un degradado
+   oscurece el lado del texto para mantener el contraste. */
+.pt-fondo-marco {
+  position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none;
+}
+/* Desvanecido superior e inferior con degradados del color del fondo: se ve igual que una máscara
+   (el fondo de la página es liso) y cuesta menos al componer, porque no hay máscara sobre capas móviles. */
+.pt-fondo-marco::before {
+  content: ""; position: absolute; inset: 0; z-index: 1;
+  background:
+    linear-gradient(to bottom, #07170e 0%, rgba(7, 23, 14, 0) 18%),
+    linear-gradient(to top, #07170e 0%, rgba(7, 23, 14, 0) 22%);
+}
+.pt-fondo-marco::after {
+  content: ""; position: absolute; inset: 0; z-index: 1;
+  background: linear-gradient(90deg, #07170e 0%, rgba(7, 23, 14, 0.9) 30%, rgba(7, 23, 14, 0.4) 62%, rgba(7, 23, 14, 0.12) 100%);
+}
+.pt-fondo {
+  --g: clamp(10px, 1.4vw, 22px);
+  position: absolute; inset-block: 0; inset-inline: 0; margin-inline: auto; width: min(100%, 1600px);
+  display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); grid-template-rows: minmax(0, 1fr);
+  gap: var(--g); padding-inline: clamp(8px, 1.5vw, 24px);
+}
+.pt-col { min-height: 0; }
+/* El desenfoque y la opacidad van en el elemento que se anima. El filtro se paga por píxel de capa,
+   así que en escritorio solo se pintan 6 portadas por mitad: bastan para cubrir el hero. */
+.pt-col-pista { filter: blur(2px); opacity: 0.55; will-change: transform; }
+.pt-mitad { display: grid; gap: var(--g); padding-bottom: var(--g); }
+.pt-col .cover { font-size: 36px; border-radius: 10px; }
+@media (min-width: 861px) { .pt-mitad > :nth-child(n + 7) { display: none; } }
 
 .pt-cifras {
-  margin: clamp(28px, 5vh, 48px) 0 0; display: grid; gap: 0 28px;
+  max-width: 640px; margin: clamp(28px, 5vh, 48px) 0 0; display: grid; gap: 0 28px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 .pt-cifra { padding: 14px 0; border-top: 1px solid rgba(255, 255, 255, 0.16); }
@@ -29,11 +62,6 @@
 }
 .pt-cifra.destacada { border-top-color: var(--green-bright); }
 .pt-cifra.destacada dd { color: var(--green-bright); }
-
-.pt-mosaico { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(8px, 1.2vw, 14px); align-self: stretch; }
-.pt-mosaico-col { display: grid; gap: clamp(8px, 1.2vw, 14px); align-content: center; will-change: transform; }
-.pt-mosaico-col:nth-child(2) { margin-top: 12%; }
-.pt-mosaico .cover { font-size: 28px; box-shadow: 0 18px 40px rgba(0, 0, 0, 0.4); }
 
 /* ---------- Secciones ---------- */
 .pt-main { max-width: 1280px; margin: 0 auto; padding: 0 clamp(16px, 4vw, 40px) 40px; }
@@ -132,8 +160,10 @@
 
 /* ---------- Móvil ---------- */
 @media (max-width: 860px) {
-  .pt-hero { grid-template-columns: minmax(0, 1fr); min-height: 0; padding-bottom: 24px; }
-  .pt-mosaico { max-height: 300px; overflow: hidden; border-radius: 12px; }
+  .pt-fondo { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .pt-col:nth-child(n + 4) { display: none; }
+  .pt-col-pista { opacity: 0.42; }
+  .pt-fondo-marco::after { background: linear-gradient(180deg, rgba(7, 23, 14, 0.55), rgba(7, 23, 14, 0.82) 50%, rgba(7, 23, 14, 0.55)); }
   .pt-podio { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
   .pt-podio-item.primero { grid-column: 1 / -1; }
   .pt-podio-item.primero .cover { width: min(70vw, 300px); }

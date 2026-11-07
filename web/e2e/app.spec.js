@@ -40,6 +40,27 @@ test.describe("portada", () => {
     expect(errores).toEqual([]);
   });
 
+  test("el fondo del hero se mueve y el hero se desvanece al hacer scroll", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.locator(".pt-cifra").first()).toBeVisible();
+    await expect(page.locator(".pt-col")).toHaveCount(5);
+    await expect(page.locator(".pt-fondo .cover").first()).toBeVisible();
+
+    // El bucle avanza: el transform de la pista cambia entre dos lecturas.
+    const lectura = () => page.locator(".pt-col-pista").first().evaluate((e) => getComputedStyle(e).transform);
+    const antes = await lectura();
+    await page.waitForTimeout(1500);
+    expect(await lectura()).not.toBe(antes);
+
+    const opacidad = () => page.locator(".pt-hero h1").evaluate((e) => Number(getComputedStyle(e).opacity));
+    await page.waitForTimeout(1500); // que termine la entrada
+    expect(await opacidad()).toBeGreaterThan(0.99);
+    await page.evaluate(() => window.scrollTo(0, 500));
+    await expect.poll(opacidad).toBeLessThan(0.9);
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await expect.poll(opacidad).toBeGreaterThan(0.99);
+  });
+
   test("las cifras del hero coinciden con la API", async ({ page, request }) => {
     const r = await (await request.get(`${API}/summary`)).json();
     await page.goto("/");
@@ -62,6 +83,7 @@ test.describe("portada", () => {
   test("el filtro Top N cambia los artistas visibles", async ({ page }) => {
     await page.goto("/");
     await expect(page.locator("#artistas .pt-podio-item, #artistas .pt-fila")).toHaveCount(10);
+    await page.locator("#artistas .pt-cabecera").scrollIntoViewIfNeeded(); // los botones se revelan con el scroll
     await page.getByRole("button", { name: "Top 5" }).click();
     await expect(page.locator("#artistas .pt-podio-item, #artistas .pt-fila")).toHaveCount(5);
     await page.getByRole("button", { name: "Top 20" }).click();
@@ -316,6 +338,7 @@ test.describe("movimiento reducido", () => {
   test("la portada se ve completa sin animaciones", async ({ page }) => {
     await page.goto("/");
     await expect(page.locator(".pt-cifra").first()).toBeVisible();
+    await expect(page.locator(".pt-fondo .cover").first()).toBeVisible();
     await page.locator("#destacados").scrollIntoViewIfNeeded();
     for (const sel of ["#artistas .pt-podio-item", "#canciones .pt-cancion", "#canciones .pt-album", "#evolucion .pt-anio", ".pt-record"]) {
       const el = page.locator(sel).first();
