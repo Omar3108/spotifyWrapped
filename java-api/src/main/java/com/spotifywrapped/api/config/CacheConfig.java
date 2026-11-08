@@ -20,7 +20,7 @@ public class CacheConfig {
     @Bean
     public CacheManager cacheManager() {
         SimpleCacheManager gestor = new SimpleCacheManager();
-        gestor.setCaches(List.of(cache("rangos", 200), cache("busquedas", 500)));
+        gestor.setCaches(List.of(cache("rangos", 200), cache("busquedas", 500), cache("comparaciones", 50)));
         return gestor;
     }
 

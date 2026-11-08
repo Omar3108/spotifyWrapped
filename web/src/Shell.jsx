@@ -10,6 +10,7 @@ import "./styles/datos.css";
 const Explore = lazy(() => import("./pages/Explore.jsx"));
 const CustomWrapped = lazy(() => import("./pages/CustomWrapped.jsx"));
 const Datos = lazy(() => import("./pages/Datos.jsx"));
+const Comparar = lazy(() => import("./pages/Comparar.jsx"));
 
 /** Elige la vista según el hash. La portada sigue siendo App.jsx, sin cambios de contenido. */
 export default function Shell() {
@@ -60,6 +61,8 @@ export default function Shell() {
       );
     }
     if (!perfiles) return <div className="vista-cargando" aria-busy="true" />;
+    // No depende del perfil activo: elige sus dos perfiles en la propia página.
+    if (vista === "comparar") return <Comparar perfiles={perfiles} activo={activo} a={ruta.a} b={ruta.b} local={local} />;
     if (!activo) return <SinDatos tipo="sin-perfiles" local={local} />;
     if (activo.reproducciones === 0) return <SinDatos tipo="sin-datos" perfil={activo} local={local} />;
 
@@ -67,7 +70,7 @@ export default function Shell() {
     return (
       <Fragment key={`${activo.id}-${activo.datosActualizados}`}>
         {vista === "explorar" && <Explore trackId={ruta.trackId} />}
-        {vista === "mi-epoca" && <CustomWrapped from={ruta.from} to={ruta.to} />}
+        {vista === "mi-epoca" && <CustomWrapped from={ruta.from} to={ruta.to} nombre={activo.nombre} />}
         {vista === "portada" && <App />}
       </Fragment>
     );

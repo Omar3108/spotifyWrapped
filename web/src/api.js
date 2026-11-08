@@ -3,8 +3,8 @@ import { perfilActivo } from "./lib/perfil.js";
 // Base de la API Spring Boot. Se puede cambiar con VITE_API_BASE en un archivo .env
 const BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:8080/api/wrapped";
 
-// Estas rutas no dependen de un perfil: la lista de perfiles, las portadas y la gestión.
-const SIN_PERFIL = /^(perfiles|art|gestion)(\/|$)/;
+// Estas rutas no dependen del perfil activo: la lista de perfiles, las portadas, la gestión y la comparación.
+const SIN_PERFIL = /^(perfiles|art|gestion|compare)(\/|$)/;
 
 // Las escrituras llevan esta cabecera: la API la exige y un formulario de otra web no puede añadirla.
 const CABECERA_GESTION = { "X-Wrapped-Gestion": "1" };
