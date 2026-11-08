@@ -33,10 +33,10 @@ class ErrorContractTest {
 
     @Test
     void un500NoExponeDetallesInternos() throws Exception {
-        when(rangos.estadisticas(any(), anyInt()))
+        when(rangos.estadisticas(anyInt(), any(), anyInt()))
                 .thenThrow(new IllegalStateException("password=secreto en jdbc:sqlserver://localhost"));
 
-        mvc.perform(get("/api/wrapped/range").param("from", "2024-01-01").param("to", "2024-01-31"))
+        mvc.perform(get("/api/wrapped/range").param("perfil", "1").param("from", "2024-01-01").param("to", "2024-01-31"))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.timestamp").exists())
                 .andExpect(jsonPath("$.status").value(500))
@@ -50,7 +50,7 @@ class ErrorContractTest {
 
     @Test
     void unRangoInvertidoDevuelve400ConMensajeClaro() throws Exception {
-        mvc.perform(get("/api/wrapped/range").param("from", "2024-02-01").param("to", "2024-01-01"))
+        mvc.perform(get("/api/wrapped/range").param("perfil", "1").param("from", "2024-02-01").param("to", "2024-01-01"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400))
                 .andExpect(jsonPath("$.message").value("La fecha inicial es posterior a la final"));
@@ -58,14 +58,20 @@ class ErrorContractTest {
 
     @Test
     void unaFechaMalFormadaDevuelve400() throws Exception {
-        mvc.perform(get("/api/wrapped/range").param("from", "ayer").param("to", "2024-01-01"))
+        mvc.perform(get("/api/wrapped/range").param("perfil", "1").param("from", "ayer").param("to", "2024-01-01"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.trace").doesNotExist());
     }
 
     @Test
     void faltarUnParametroDevuelve400() throws Exception {
-        mvc.perform(get("/api/wrapped/range").param("from", "2024-01-01"))
+        mvc.perform(get("/api/wrapped/range").param("perfil", "1").param("from", "2024-01-01"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void faltarElPerfilDevuelve400() throws Exception {
+        mvc.perform(get("/api/wrapped/range").param("from", "2024-01-01").param("to", "2024-01-31"))
                 .andExpect(status().isBadRequest());
     }
 }

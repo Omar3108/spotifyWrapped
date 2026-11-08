@@ -14,5 +14,5 @@ COPY --from=build --chown=app:app /build/app.jar app.jar
 USER 10001:10001
 EXPOSE 8080
 HEALTHCHECK --interval=15s --timeout=5s --start-period=60s --retries=5 \
-  CMD bash -c 'exec 3<>/dev/tcp/127.0.0.1/8080 && printf "GET /api/wrapped/summary HTTP/1.0\r\n\r\n" >&3 && head -n1 <&3 | grep -q " 200 "'
+  CMD bash -c 'exec 3<>/dev/tcp/127.0.0.1/8080 && printf "GET /api/wrapped/perfiles HTTP/1.0\r\n\r\n" >&3 && head -n1 <&3 | grep -q " 200 "'
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]

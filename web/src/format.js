@@ -54,3 +54,15 @@ export function fechaHora(iso) {
 
 export const porcentaje = (valor) =>
   `${Number(valor ?? 0).toLocaleString("es", { maximumFractionDigits: valor < 1 ? 2 : 1 })} %`;
+
+/**
+ * Para las marcas que escribe el servidor (p. ej. users.datos_actualizados): la base corre en UTC y la API
+ * las entrega sin zona. A diferencia de played_at, aquí sí hay que convertir a la hora de Caracas.
+ */
+export function fechaHoraDeServidor(iso) {
+  if (!iso) return "—";
+  return new Date(`${iso}`.slice(0, 19) + "Z").toLocaleString("es", {
+    day: "numeric", month: "short", year: "numeric",
+    hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "America/Caracas",
+  });
+}

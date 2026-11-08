@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { get } from "../api.js";
 import { crearLru } from "../lib/lru.js";
+import { perfilActivo, versionDatos } from "../lib/perfil.js";
 import { derivarWrapped } from "../lib/wrapped.js";
 
 const cache = crearLru(20);
 
 /** Estadísticas del rango. Siempre coinciden con from/to: cambiar el rango cancela lo anterior. */
 export function useWrappedStats(from, to) {
-  const clave = from && to ? `${from}|${to}` : null;
+  const clave = from && to ? `${perfilActivo()}|${versionDatos()}|${from}|${to}` : null;
   const [estado, setEstado] = useState({ clave: null, data: null, error: null });
   const [intento, setIntento] = useState(0);
 

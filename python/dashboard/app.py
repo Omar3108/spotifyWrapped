@@ -12,6 +12,8 @@ import pandas as pd
 
 # Se puede sobrescribir con la variable de entorno API_BASE_URL
 API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8080/api/wrapped").rstrip("/")
+# Perfil que muestra este dashboard (id de la tabla users). Por defecto, el primero.
+PERFIL_ID = os.getenv("PERFIL_ID", "1")
 
 st.set_page_config(
     page_title="Mi Spotify Wrapped",
@@ -31,7 +33,7 @@ def _pedir_json(url, params_items):
 def obtener_datos(endpoint, params=None):
     """Llama a un endpoint de la API y devuelve el JSON, con manejo de errores"""
     url = f"{API_BASE_URL}/{endpoint}"
-    params_items = tuple(sorted(params.items())) if params else ()
+    params_items = tuple(sorted({**(params or {}), "perfil": PERFIL_ID}.items()))
     try:
         return _pedir_json(url, params_items)
     except requests.exceptions.ConnectionError:

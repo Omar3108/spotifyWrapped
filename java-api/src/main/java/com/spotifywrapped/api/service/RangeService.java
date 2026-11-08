@@ -27,25 +27,25 @@ public class RangeService {
         this.repo = repo;
     }
 
-    @Cacheable(cacheNames = "rangos", key = "#rango.from() + '|' + #rango.to() + '|' + #limite")
-    public RangeStats estadisticas(DateRange rango, int limite) {
+    @Cacheable(cacheNames = "rangos", key = "#perfil + '|' + #rango.from() + '|' + #rango.to() + '|' + #limite")
+    public RangeStats estadisticas(int perfil, DateRange rango, int limite) {
         LocalDateTime desde = rango.desde();
         LocalDateTime hasta = rango.hastaExclusivo();
-        RangeTotals t = repo.totales(desde, hasta);
+        RangeTotals t = repo.totales(perfil, desde, hasta);
 
         List<Punto> porDia = rango.dias() <= DIAS_MAXIMOS_POR_DIA
-                ? TimeBuckets.dias(rango.from(), rango.to(), puntos(repo.porDia(desde, hasta)))
+                ? TimeBuckets.dias(rango.from(), rango.to(), puntos(repo.porDia(perfil, desde, hasta)))
                 : List.of();
 
         return new RangeStats(
                 rango.from(), rango.to(),
                 t.getReproducciones(), t.getMinutos(), t.getCancionesDistintas(), t.getArtistasDistintos(),
-                repo.diaPico(desde, hasta),
-                repo.topArtistas(desde, hasta, limite),
-                repo.topCanciones(desde, hasta, limite),
-                repo.topAlbumes(desde, hasta, limite),
-                TimeBuckets.meses(YearMonth.from(rango.from()), YearMonth.from(rango.to()), puntos(repo.porMes(desde, hasta))),
-                TimeBuckets.horas(puntos(repo.porHora(desde, hasta))),
+                repo.diaPico(perfil, desde, hasta),
+                repo.topArtistas(perfil, desde, hasta, limite),
+                repo.topCanciones(perfil, desde, hasta, limite),
+                repo.topAlbumes(perfil, desde, hasta, limite),
+                TimeBuckets.meses(YearMonth.from(rango.from()), YearMonth.from(rango.to()), puntos(repo.porMes(perfil, desde, hasta))),
+                TimeBuckets.horas(puntos(repo.porHora(perfil, desde, hasta))),
                 porDia);
     }
 

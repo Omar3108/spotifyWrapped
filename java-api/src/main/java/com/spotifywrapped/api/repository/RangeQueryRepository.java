@@ -26,18 +26,18 @@ public interface RangeQueryRepository extends Repository<Play, Long> {
                COUNT(DISTINCT t.artist_id) AS artistasDistintos
         FROM plays p
         JOIN tracks t ON t.track_id = p.track_id
-        WHERE p.played_at >= :desde AND p.played_at < :hasta
+        WHERE p.user_id = :perfil AND p.played_at >= :desde AND p.played_at < :hasta
         """, nativeQuery = true)
-    RangeTotals totales(@Param("desde") LocalDateTime desde, @Param("hasta") LocalDateTime hasta);
+    RangeTotals totales(@Param("perfil") int perfil, @Param("desde") LocalDateTime desde, @Param("hasta") LocalDateTime hasta);
 
     @Query(value = """
         WITH base AS (
-            SELECT a.artist_name, t.spotify_uri, COUNT(*) AS n, SUM(CAST(p.ms_played AS BIGINT)) AS ms
+            SELECT a.artist_id, a.artist_name, t.spotify_uri, COUNT(*) AS n, SUM(CAST(p.ms_played AS BIGINT)) AS ms
             FROM plays p
             JOIN tracks t ON t.track_id = p.track_id
             JOIN artists a ON a.artist_id = t.artist_id
-            WHERE p.played_at >= :desde AND p.played_at < :hasta
-            GROUP BY a.artist_name, t.spotify_uri
+            WHERE p.user_id = :perfil AND p.played_at >= :desde AND p.played_at < :hasta
+            GROUP BY a.artist_id, a.artist_name, t.spotify_uri
         ),
         ordenado AS (
             SELECT *,
@@ -47,6 +47,7 @@ public interface RangeQueryRepository extends Repository<Play, Long> {
             FROM base
         )
         SELECT CAST(NULL AS INT) AS trackId,
+               artist_id AS artistId,
                artist_name AS nombre,
                artist_name AS artistName,
                total AS reproducciones,
@@ -57,7 +58,7 @@ public interface RangeQueryRepository extends Repository<Play, Long> {
         ORDER BY total DESC, total_ms DESC, artist_name
         OFFSET 0 ROWS FETCH NEXT :limite ROWS ONLY
         """, nativeQuery = true)
-    List<RangeRanked> topArtistas(@Param("desde") LocalDateTime desde, @Param("hasta") LocalDateTime hasta,
+    List<RangeRanked> topArtistas(@Param("perfil") int perfil, @Param("desde") LocalDateTime desde, @Param("hasta") LocalDateTime hasta,
                                   @Param("limite") int limite);
 
     @Query(value = """
@@ -67,7 +68,7 @@ public interface RangeQueryRepository extends Repository<Play, Long> {
             FROM plays p
             JOIN tracks t ON t.track_id = p.track_id
             JOIN artists a ON a.artist_id = t.artist_id
-            WHERE p.played_at >= :desde AND p.played_at < :hasta
+            WHERE p.user_id = :perfil AND p.played_at >= :desde AND p.played_at < :hasta
             GROUP BY t.track_id, t.track_name, a.artist_name, t.spotify_uri
         ),
         ordenado AS (
@@ -79,6 +80,7 @@ public interface RangeQueryRepository extends Repository<Play, Long> {
             FROM base
         )
         SELECT track_id_cancion AS trackId,
+               CAST(NULL AS INT) AS artistId,
                track_name AS nombre,
                artist_name AS artistName,
                total AS reproducciones,
@@ -89,7 +91,7 @@ public interface RangeQueryRepository extends Repository<Play, Long> {
         ORDER BY total DESC, total_ms DESC, track_name, artist_name
         OFFSET 0 ROWS FETCH NEXT :limite ROWS ONLY
         """, nativeQuery = true)
-    List<RangeRanked> topCanciones(@Param("desde") LocalDateTime desde, @Param("hasta") LocalDateTime hasta,
+    List<RangeRanked> topCanciones(@Param("perfil") int perfil, @Param("desde") LocalDateTime desde, @Param("hasta") LocalDateTime hasta,
                                    @Param("limite") int limite);
 
     @Query(value = """
@@ -98,7 +100,7 @@ public interface RangeQueryRepository extends Repository<Play, Long> {
             FROM plays p
             JOIN tracks t ON t.track_id = p.track_id
             JOIN artists a ON a.artist_id = t.artist_id
-            WHERE p.played_at >= :desde AND p.played_at < :hasta
+            WHERE p.user_id = :perfil AND p.played_at >= :desde AND p.played_at < :hasta
               AND t.album_name IS NOT NULL
             GROUP BY t.album_name, a.artist_name, t.spotify_uri
         ),
@@ -110,6 +112,7 @@ public interface RangeQueryRepository extends Repository<Play, Long> {
             FROM base
         )
         SELECT CAST(NULL AS INT) AS trackId,
+               CAST(NULL AS INT) AS artistId,
                album_name AS nombre,
                artist_name AS artistName,
                total AS reproducciones,
@@ -120,7 +123,7 @@ public interface RangeQueryRepository extends Repository<Play, Long> {
         ORDER BY total DESC, total_ms DESC, album_name, artist_name
         OFFSET 0 ROWS FETCH NEXT :limite ROWS ONLY
         """, nativeQuery = true)
-    List<RangeRanked> topAlbumes(@Param("desde") LocalDateTime desde, @Param("hasta") LocalDateTime hasta,
+    List<RangeRanked> topAlbumes(@Param("perfil") int perfil, @Param("desde") LocalDateTime desde, @Param("hasta") LocalDateTime hasta,
                                  @Param("limite") int limite);
 
     @Query(value = """
@@ -128,11 +131,11 @@ public interface RangeQueryRepository extends Repository<Play, Long> {
                COUNT(*) AS reproducciones,
                SUM(CAST(ms_played AS BIGINT)) / 1000.0 / 60 AS minutos
         FROM plays
-        WHERE played_at >= :desde AND played_at < :hasta
+        WHERE user_id = :perfil AND played_at >= :desde AND played_at < :hasta
         GROUP BY CAST(played_at AS DATE)
         ORDER BY minutos DESC, dia
         """, nativeQuery = true)
-    PeakDay diaPico(@Param("desde") LocalDateTime desde, @Param("hasta") LocalDateTime hasta);
+    PeakDay diaPico(@Param("perfil") int perfil, @Param("desde") LocalDateTime desde, @Param("hasta") LocalDateTime hasta);
 
     @Query(value = """
         WITH base AS (
@@ -141,7 +144,7 @@ public interface RangeQueryRepository extends Repository<Play, Long> {
             FROM plays p
             JOIN tracks t ON t.track_id = p.track_id
             JOIN artists a ON a.artist_id = t.artist_id
-            WHERE p.played_at >= :desde AND p.played_at < :hasta
+            WHERE p.user_id = :perfil AND p.played_at >= :desde AND p.played_at < :hasta
             GROUP BY CONVERT(CHAR(7), p.played_at, 126), a.artist_name
         ),
         ordenado AS (
@@ -159,7 +162,7 @@ public interface RangeQueryRepository extends Repository<Play, Long> {
         WHERE fila = 1
         ORDER BY periodo
         """, nativeQuery = true)
-    List<PuntoFila> porMes(@Param("desde") LocalDateTime desde, @Param("hasta") LocalDateTime hasta);
+    List<PuntoFila> porMes(@Param("perfil") int perfil, @Param("desde") LocalDateTime desde, @Param("hasta") LocalDateTime hasta);
 
     @Query(value = """
         SELECT RIGHT('0' + CAST(DATEPART(HOUR, played_at) AS VARCHAR(2)), 2) AS periodo,
@@ -167,11 +170,11 @@ public interface RangeQueryRepository extends Repository<Play, Long> {
                SUM(CAST(ms_played AS BIGINT)) / 1000.0 / 60 AS minutos,
                CAST(NULL AS NVARCHAR(255)) AS artistaLider
         FROM plays
-        WHERE played_at >= :desde AND played_at < :hasta
+        WHERE user_id = :perfil AND played_at >= :desde AND played_at < :hasta
         GROUP BY DATEPART(HOUR, played_at)
         ORDER BY periodo
         """, nativeQuery = true)
-    List<PuntoFila> porHora(@Param("desde") LocalDateTime desde, @Param("hasta") LocalDateTime hasta);
+    List<PuntoFila> porHora(@Param("perfil") int perfil, @Param("desde") LocalDateTime desde, @Param("hasta") LocalDateTime hasta);
 
     @Query(value = """
         SELECT CONVERT(CHAR(10), played_at, 126) AS periodo,
@@ -179,9 +182,9 @@ public interface RangeQueryRepository extends Repository<Play, Long> {
                SUM(CAST(ms_played AS BIGINT)) / 1000.0 / 60 AS minutos,
                CAST(NULL AS NVARCHAR(255)) AS artistaLider
         FROM plays
-        WHERE played_at >= :desde AND played_at < :hasta
+        WHERE user_id = :perfil AND played_at >= :desde AND played_at < :hasta
         GROUP BY CONVERT(CHAR(10), played_at, 126)
         ORDER BY periodo
         """, nativeQuery = true)
-    List<PuntoFila> porDia(@Param("desde") LocalDateTime desde, @Param("hasta") LocalDateTime hasta);
+    List<PuntoFila> porDia(@Param("perfil") int perfil, @Param("desde") LocalDateTime desde, @Param("hasta") LocalDateTime hasta);
 }

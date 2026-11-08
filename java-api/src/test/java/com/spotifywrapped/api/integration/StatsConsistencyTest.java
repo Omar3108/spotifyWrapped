@@ -36,12 +36,14 @@ import com.spotifywrapped.api.support.SearchPattern;
 @SpringBootTest
 class StatsConsistencyTest {
 
+    private static final int PERFIL = 1;
+
     @Autowired private RangeService rangos;
     @Autowired private ExploreService explore;
     @Autowired private PlayRepository plays;
 
     private WrappedSummary resumen() {
-        return plays.obtenerResumenGeneral();
+        return plays.obtenerResumenGeneral(PERFIL);
     }
 
     private LocalDate primerDia() {
@@ -53,7 +55,7 @@ class StatsConsistencyTest {
     }
 
     private RangeStats rango(LocalDate a, LocalDate b) {
-        return rangos.estadisticas(new DateRange(a, b), 10);
+        return rangos.estadisticas(PERFIL, new DateRange(a, b), 10);
     }
 
     private RangeStats anio(int a) {
@@ -83,11 +85,19 @@ class StatsConsistencyTest {
     @Test
     void elPatronPorHoraCoincideConHabitos() {
         RangeStats r = rango(primerDia(), ultimoDia());
-        for (HourlyPattern h : plays.obtenerPatronPorHora()) {
+        for (HourlyPattern h : plays.obtenerPatronPorHora(PERFIL)) {
             assertThat(r.porHora().get(h.getHoraDelDia()).reproducciones())
                     .as("hora %s", h.getHoraDelDia())
                     .isEqualTo(h.getReproducciones().longValue());
         }
+    }
+
+    @Test
+    void soloLosRankingsDeArtistasTraenArtistId() {
+        RangeStats r = rango(primerDia(), ultimoDia());
+        assertThat(r.topArtistas()).extracting(RangeRanked::getArtistId).doesNotContainNull().doesNotHaveDuplicates();
+        assertThat(r.topCanciones()).extracting(RangeRanked::getArtistId).containsOnlyNulls();
+        assertThat(r.topAlbumes()).extracting(RangeRanked::getArtistId).containsOnlyNulls();
     }
 
     @Test
@@ -96,22 +106,22 @@ class StatsConsistencyTest {
             RangeStats r = anio(a);
             assertThat(r.topArtistas()).extracting(x -> x.getReproducciones().longValue())
                     .as("artistas %s", a)
-                    .containsExactlyElementsOf(plays.obtenerTopArtistasPorAnio(a, 10).stream()
+                    .containsExactlyElementsOf(plays.obtenerTopArtistasPorAnio(PERFIL, a, 10).stream()
                             .map(x -> x.getReproducciones().longValue()).toList());
             assertThat(r.topCanciones()).extracting(x -> x.getReproducciones().longValue())
                     .as("canciones %s", a)
-                    .containsExactlyElementsOf(plays.obtenerTopCancionesPorAnio(a, 10).stream()
+                    .containsExactlyElementsOf(plays.obtenerTopCancionesPorAnio(PERFIL, a, 10).stream()
                             .map(x -> x.getReproducciones().longValue()).toList());
             assertThat(r.topAlbumes()).extracting(x -> x.getReproducciones().longValue())
                     .as("albumes %s", a)
-                    .containsExactlyElementsOf(plays.obtenerTopAlbumesPorAnio(a, 10).stream()
+                    .containsExactlyElementsOf(plays.obtenerTopAlbumesPorAnio(PERFIL, a, 10).stream()
                             .map(x -> x.getReproducciones().longValue()).toList());
         }
     }
 
     @Test
     void elMejorArtistaDelAnioCoincideConEvolucion() {
-        plays.obtenerTopArtistaPorAnio().forEach(fila -> {
+        plays.obtenerTopArtistaPorAnio(PERFIL).forEach(fila -> {
             RangeRanked primero = anio(fila.getAnio()).topArtistas().get(0);
             assertThat(primero.getReproducciones().longValue())
                     .as("año %s", fila.getAnio())
@@ -155,11 +165,11 @@ class StatsConsistencyTest {
 
     @Test
     void elDetalleDeCadaTopCancionCoincideConElRanking() {
-        for (TopTrack top : plays.obtenerTopCancionesGeneral(25)) {
+        for (TopTrack top : plays.obtenerTopCancionesGeneral(PERFIL, 25)) {
             SongSearchResult hit = buscarExacta(top.getTrackName(), top.getArtistName());
             assertThat(hit.getReproducciones()).as(top.getTrackName()).isEqualTo(top.getReproducciones());
 
-            SongDetail d = explore.detalle(hit.getTrackId(), "song");
+            SongDetail d = explore.detalle(PERFIL, hit.getTrackId(), "song");
             assertThat(d.reproducciones()).as(top.getTrackName()).isEqualTo(top.getReproducciones());
             assertThat(d.msTotal() / 60000.0).isCloseTo(top.getMinutos(), within(0.01));
         }
@@ -167,14 +177,14 @@ class StatsConsistencyTest {
 
     @Test
     void lasVersionesSumanLaCancionYSeConsultanPorSeparado() {
-        for (TopTrack top : plays.obtenerTopCancionesGeneral(25)) {
+        for (TopTrack top : plays.obtenerTopCancionesGeneral(PERFIL, 25)) {
             int id = buscarExacta(top.getTrackName(), top.getArtistName()).getTrackId();
-            SongDetail cancion = explore.detalle(id, "song");
+            SongDetail cancion = explore.detalle(PERFIL, id, "song");
             long suma = cancion.versiones().stream().mapToLong(SongVersion::getReproducciones).sum();
             assertThat(suma).isEqualTo(cancion.reproducciones());
 
             for (SongVersion v : cancion.versiones()) {
-                SongDetail version = explore.detalle(v.getTrackId(), "version");
+                SongDetail version = explore.detalle(PERFIL, v.getTrackId(), "version");
                 assertThat(version.reproducciones()).isEqualTo(v.getReproducciones());
                 assertThat(version.spotifyUri()).isEqualTo(v.getSpotifyUri());
             }
@@ -183,43 +193,43 @@ class StatsConsistencyTest {
 
     @Test
     void laLineaTemporalSumaElDetalle() {
-        for (TopTrack top : plays.obtenerTopCancionesGeneral(10)) {
+        for (TopTrack top : plays.obtenerTopCancionesGeneral(PERFIL, 10)) {
             int id = buscarExacta(top.getTrackName(), top.getArtistName()).getTrackId();
-            long esperado = explore.detalle(id, "song").reproducciones();
-            assertThat(suma(explore.linea(id, "song", "month"))).isEqualTo(esperado);
-            assertThat(suma(explore.linea(id, "song", "year"))).isEqualTo(esperado);
+            long esperado = explore.detalle(PERFIL, id, "song").reproducciones();
+            assertThat(suma(explore.linea(PERFIL, id, "song", "month"))).isEqualTo(esperado);
+            assertThat(suma(explore.linea(PERFIL, id, "song", "year"))).isEqualTo(esperado);
         }
     }
 
     @Test
     void laBusquedaIgnoraMayusculasYAcentos() {
-        List<SongSearchResult> r = explore.buscar("BEYONCE", 30);
+        List<SongSearchResult> r = explore.buscar(PERFIL, "BEYONCE", 30);
         assertThat(r).anyMatch(x -> x.getTrackName().contains("Beyoncé") || x.getArtistName().contains("Beyoncé"));
     }
 
     @Test
     void laBusquedaEncuentraPorArtista() {
-        ArtistRanking artista = plays.obtenerTopArtistas(1).get(0);
-        assertThat(explore.buscar(SearchPattern.normalizar(artista.getArtistName()), 30))
+        ArtistRanking artista = plays.obtenerTopArtistas(PERFIL, 1).get(0);
+        assertThat(explore.buscar(PERFIL, SearchPattern.normalizar(artista.getArtistName()), 30))
                 .isNotEmpty()
                 .anyMatch(x -> x.getArtistName().equals(artista.getArtistName()));
     }
 
     @Test
     void losComodinesSeBuscanComoTexto() {
-        assertThat(explore.buscar("%%", 30)).allMatch(x ->
+        assertThat(explore.buscar(PERFIL, "%%", 30)).allMatch(x ->
                 x.getTrackName().contains("%%") || x.getArtistName().contains("%%"));
     }
 
     @Test
     void losAlbumesDelTopGeneralSonConsistentes() {
-        TopAlbum top = plays.obtenerTopAlbumesGeneral(1).get(0);
+        TopAlbum top = plays.obtenerTopAlbumesGeneral(PERFIL, 1).get(0);
         RangeRanked primero = rango(primerDia(), ultimoDia()).topAlbumes().get(0);
         assertThat(primero.getReproducciones()).isEqualTo(top.getReproducciones());
     }
 
     private SongSearchResult buscarExacta(String titulo, String artista) {
-        return explore.buscar(SearchPattern.normalizar(titulo), 30).stream()
+        return explore.buscar(PERFIL, SearchPattern.normalizar(titulo), 30).stream()
                 .filter(x -> x.getTrackName().equals(titulo) && x.getArtistName().equals(artista))
                 .findFirst()
                 .orElseThrow(() -> new AssertionError("No aparece en la búsqueda: " + titulo + " / " + artista));

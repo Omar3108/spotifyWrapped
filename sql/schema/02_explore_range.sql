@@ -1,4 +1,5 @@
 -- Índices y tabla de portadas para Explorar y Mi época.
+-- Los índices de plays con user_id los reemplaza 03_perfiles.sql (ejecútalo después de este).
 -- Se puede ejecutar más de una vez. La API usa ddl-auto=none, así que no se aplica sola.
 USE spotify_wrapped;
 GO

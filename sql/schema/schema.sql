@@ -16,8 +16,17 @@ CREATE TABLE tracks (
 );
 GO
 
+CREATE TABLE users (
+    user_id             INT IDENTITY PRIMARY KEY,
+    nombre              NVARCHAR(60) COLLATE Latin1_General_100_CI_AI NOT NULL UNIQUE,
+    creado_en           DATETIME2 NOT NULL DEFAULT SYSDATETIME(),
+    datos_actualizados  DATETIME2 NULL
+);
+GO
+
 CREATE TABLE sessions (
     session_id      INT IDENTITY PRIMARY KEY,
+    user_id         INT NOT NULL FOREIGN KEY REFERENCES users(user_id),
     start_time      DATETIME2,
     end_time        DATETIME2,
     total_ms        INT,
@@ -27,6 +36,7 @@ GO
 
 CREATE TABLE plays (
     play_id         BIGINT IDENTITY PRIMARY KEY,
+    user_id         INT NOT NULL FOREIGN KEY REFERENCES users(user_id),
     track_id        INT FOREIGN KEY REFERENCES tracks(track_id),
     played_at       DATETIME2 NOT NULL,
     ms_played       INT NOT NULL,
@@ -37,3 +47,4 @@ CREATE TABLE plays (
     session_id      INT NULL FOREIGN KEY REFERENCES sessions(session_id)
 );
 GO
+-- Los índices, track_art y artist_art se crean con 02_explore_range.sql y 03_perfiles.sql.

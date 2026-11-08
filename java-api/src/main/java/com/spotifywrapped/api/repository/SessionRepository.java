@@ -20,7 +20,8 @@ public interface SessionRepository extends JpaRepository<Session, Integer> {
             track_count AS trackCount,
             total_ms / 1000.0 / 60 AS minutosTotales
         FROM sessions
+        WHERE user_id = :perfil
         ORDER BY total_ms DESC
         """, nativeQuery = true)
-    List<LongestSession> obtenerSesionesMasLargas(@Param("limite") int limite);
+    List<LongestSession> obtenerSesionesMasLargas(@Param("perfil") int perfil, @Param("limite") int limite);
 }

@@ -24,9 +24,10 @@ public class RangeController {
 
     @GetMapping("/range")
     public RangeStats estadisticas(
+            @RequestParam int perfil,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
             @RequestParam(defaultValue = "10") int limit) {
-        return rangos.estadisticas(new DateRange(from, to), Math.clamp(limit, 1, 50));
+        return rangos.estadisticas(perfil, new DateRange(from, to), Math.clamp(limit, 1, 50));
     }
 }

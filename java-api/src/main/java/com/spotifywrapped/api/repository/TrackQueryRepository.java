@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
 
+import com.spotifywrapped.api.dto.ArtistSearchResult;
 import com.spotifywrapped.api.dto.PuntoFila;
 import com.spotifywrapped.api.dto.SongHeader;
 import com.spotifywrapped.api.dto.SongSearchResult;
@@ -34,7 +35,7 @@ public interface TrackQueryRepository extends Repository<Play, Long> {
             SELECT c.track_id, c.track_name, c.album_name, c.spotify_uri, c.artist_name,
                    COUNT(p.play_id) AS reproducciones
             FROM coincidencias c
-            LEFT JOIN plays p ON p.track_id = c.track_id
+            JOIN plays p ON p.track_id = c.track_id AND p.user_id = :perfil
             GROUP BY c.track_id, c.track_name, c.album_name, c.spotify_uri, c.artist_name
         ),
         agrupadas AS (
@@ -64,9 +65,30 @@ public interface TrackQueryRepository extends Repository<Play, Long> {
             artist_name
         OFFSET 0 ROWS FETCH NEXT :limite ROWS ONLY
         """, nativeQuery = true)
-    List<SongSearchResult> buscar(@Param("contiene") String contiene,
+    List<SongSearchResult> buscar(@Param("perfil") int perfil,
+                                  @Param("contiene") String contiene,
                                   @Param("empieza") String empieza,
                                   @Param("limite") int limite);
+
+    /** Solo artistas que el perfil escuchó, primero los que empiezan por el texto buscado. */
+    @Query(value = """
+        SELECT TOP (:limite)
+               a.artist_id AS artistId,
+               a.artist_name AS artistName,
+               COUNT(*) AS reproducciones
+        FROM artists a
+        JOIN tracks t ON t.artist_id = a.artist_id
+        JOIN plays p ON p.track_id = t.track_id AND p.user_id = :perfil
+        WHERE a.artist_name COLLATE Latin1_General_100_CI_AI LIKE :contiene ESCAPE '|'
+        GROUP BY a.artist_id, a.artist_name
+        ORDER BY CASE WHEN a.artist_name COLLATE Latin1_General_100_CI_AI LIKE :empieza ESCAPE '|' THEN 0 ELSE 1 END,
+                 COUNT(*) DESC,
+                 a.artist_name
+        """, nativeQuery = true)
+    List<ArtistSearchResult> buscarArtistas(@Param("perfil") int perfil,
+                                            @Param("contiene") String contiene,
+                                            @Param("empieza") String empieza,
+                                            @Param("limite") int limite);
 
     /** Cabecera con la versión más escuchada. Sin filas significa que el id no existe. */
     @Query(value = """
@@ -83,11 +105,11 @@ public interface TrackQueryRepository extends Repository<Play, Long> {
                g.spotify_uri AS spotifyUri
         FROM grupo g
         JOIN artists a ON a.artist_id = g.artist_id
-        LEFT JOIN plays p ON p.track_id = g.track_id
+        JOIN plays p ON p.track_id = g.track_id AND p.user_id = :perfil
         GROUP BY g.track_id, g.track_name, g.album_name, g.spotify_uri, a.artist_name
         ORDER BY COUNT(p.play_id) DESC, g.track_id
         """, nativeQuery = true)
-    SongHeader cabecera(@Param("id") int id, @Param("soloVersion") int soloVersion);
+    SongHeader cabecera(@Param("perfil") int perfil, @Param("id") int id, @Param("soloVersion") int soloVersion);
 
     @Query(value = """
         WITH grupo AS (
@@ -101,9 +123,9 @@ public interface TrackQueryRepository extends Repository<Play, Long> {
                MIN(p.played_at) AS primera,
                MAX(p.played_at) AS ultima
         FROM grupo g
-        LEFT JOIN plays p ON p.track_id = g.track_id
+        LEFT JOIN plays p ON p.track_id = g.track_id AND p.user_id = :perfil
         """, nativeQuery = true)
-    SongTotals totales(@Param("id") int id, @Param("soloVersion") int soloVersion);
+    SongTotals totales(@Param("perfil") int perfil, @Param("id") int id, @Param("soloVersion") int soloVersion);
 
     @Query(value = """
         WITH grupo AS (
@@ -114,11 +136,11 @@ public interface TrackQueryRepository extends Repository<Play, Long> {
         )
         SELECT TOP 1 YEAR(p.played_at) AS anio, COUNT(*) AS reproducciones
         FROM grupo g
-        JOIN plays p ON p.track_id = g.track_id
+        JOIN plays p ON p.track_id = g.track_id AND p.user_id = :perfil
         GROUP BY YEAR(p.played_at)
         ORDER BY reproducciones DESC, anio DESC
         """, nativeQuery = true)
-    SongYear mejorAnio(@Param("id") int id, @Param("soloVersion") int soloVersion);
+    SongYear mejorAnio(@Param("perfil") int perfil, @Param("id") int id, @Param("soloVersion") int soloVersion);
 
     @Query(value = """
         SELECT v.track_id AS trackId,
@@ -128,12 +150,12 @@ public interface TrackQueryRepository extends Repository<Play, Long> {
                COALESCE(SUM(CAST(p.ms_played AS BIGINT)), 0) / 1000.0 / 60 AS minutos
         FROM tracks t
         JOIN tracks v ON v.track_name = t.track_name AND v.artist_id = t.artist_id
-        LEFT JOIN plays p ON p.track_id = v.track_id
+        JOIN plays p ON p.track_id = v.track_id AND p.user_id = :perfil
         WHERE t.track_id = :id
         GROUP BY v.track_id, v.album_name, v.spotify_uri
         ORDER BY reproducciones DESC, v.track_id
         """, nativeQuery = true)
-    List<SongVersion> versiones(@Param("id") int id);
+    List<SongVersion> versiones(@Param("perfil") int perfil, @Param("id") int id);
 
     @Query(value = """
         WITH grupo AS (
@@ -147,12 +169,12 @@ public interface TrackQueryRepository extends Repository<Play, Long> {
                SUM(CAST(p.ms_played AS BIGINT)) / 1000.0 / 60 AS minutos,
                CAST(NULL AS NVARCHAR(255)) AS artistaLider
         FROM grupo g
-        JOIN plays p ON p.track_id = g.track_id
+        JOIN plays p ON p.track_id = g.track_id AND p.user_id = :perfil
         GROUP BY CONVERT(CHAR(7), p.played_at, 126)
         ORDER BY periodo
         """, nativeQuery = true)
-    List<PuntoFila> porMes(@Param("id") int id, @Param("soloVersion") int soloVersion);
+    List<PuntoFila> porMes(@Param("perfil") int perfil, @Param("id") int id, @Param("soloVersion") int soloVersion);
 
-    @Query(value = "SELECT COALESCE(SUM(CAST(ms_played AS BIGINT)), 0) FROM plays", nativeQuery = true)
-    long msTotalHistorial();
+    @Query(value = "SELECT COALESCE(SUM(CAST(ms_played AS BIGINT)), 0) FROM plays WHERE user_id = :perfil", nativeQuery = true)
+    long msTotalHistorial(@Param("perfil") int perfil);
 }

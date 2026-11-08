@@ -1,10 +1,12 @@
+import { PerfilMenu } from "./PerfilMenu.jsx";
+
 const VISTAS = [
   { vista: "explorar", href: "#/explorar", texto: "Explorar" },
   { vista: "mi-epoca", href: "#/mi-epoca", texto: "Mi época" },
   { vista: "portada", href: "#inicio", texto: "Mi Wrapped" },
 ];
 
-export function TopNav({ vista }) {
+export function TopNav({ vista, perfiles, activo, local }) {
   return (
     <nav className="topnav" aria-label="Principal">
       <a className="brand" href="#inicio">Wrapped</a>
@@ -14,6 +16,7 @@ export function TopNav({ vista }) {
             aria-current={vista === v.vista ? "page" : undefined}>{v.texto}</a>
         ))}
       </div>
+      <PerfilMenu perfiles={perfiles} activo={activo} local={local} />
     </nav>
   );
 }

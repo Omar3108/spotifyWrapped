@@ -4,6 +4,7 @@ import { useSyncExternalStore } from "react";
  * Rutas propias con el hash, sin tocar los anclas de la portada (#artistas, #anio...).
  *   #/explorar          #/explorar/123
  *   #/mi-epoca          #/mi-epoca?from=2023-01-01&to=2023-12-31
+ *   #/datos             gestión de perfiles y datos (solo en local)
  */
 export function interpretarHash(hash) {
   const explorar = hash.match(/^#\/explorar(?:\/(\d+))?\/?$/);
@@ -15,6 +16,7 @@ export function interpretarHash(hash) {
     const q = new URLSearchParams(epoca[1] ?? "");
     return { vista: "mi-epoca", from: q.get("from"), to: q.get("to") };
   }
+  if (/^#\/datos\/?$/.test(hash)) return { vista: "datos" };
   return { vista: "portada", ancla: hash.startsWith("#") ? hash.slice(1) : "" };
 }
 

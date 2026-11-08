@@ -1,6 +1,9 @@
 import { expect, test } from "@playwright/test";
 
-const API = "http://127.0.0.1:8080/api/wrapped";
+// E2E_API permite apuntar a otra API (por ejemplo, la de Docker a través del proxy de Vite).
+const API = process.env.E2E_API ?? "http://127.0.0.1:8080/api/wrapped";
+const PERFIL = 1;
+const api = (ruta) => `${API}/${ruta}${ruta.includes("?") ? "&" : "?"}perfil=${PERFIL}`;
 const ANIO = "#/mi-epoca?from=2023-01-01&to=2023-12-31";
 
 const esMovil = (testInfo) => testInfo.project.name === "movil";
@@ -62,7 +65,7 @@ test.describe("portada", () => {
   });
 
   test("las cifras del hero coinciden con la API", async ({ page, request }) => {
-    const r = await (await request.get(`${API}/summary`)).json();
+    const r = await (await request.get(api(`summary`))).json();
     await page.goto("/");
     await expect(page.locator(".pt-cifras")).toContainText(r.totalReproducciones.toLocaleString("es"));
     await expect(page.locator(".pt-cifras")).toContainText(r.cancionesDistintas.toLocaleString("es"));
@@ -91,10 +94,10 @@ test.describe("portada", () => {
   });
 
   test("los totales de la portada coinciden con Mi época", async ({ page, request }) => {
-    const resumen = await (await request.get(`${API}/summary`)).json();
+    const resumen = await (await request.get(api(`summary`))).json();
     const from = resumen.primeraReproduccion.slice(0, 10);
     const to = resumen.ultimaReproduccion.slice(0, 10);
-    const rango = await (await request.get(`${API}/range?from=${from}&to=${to}`)).json();
+    const rango = await (await request.get(api(`range?from=${from}&to=${to}`))).json();
     expect(rango.reproducciones).toBe(resumen.totalReproducciones);
     expect(rango.cancionesDistintas).toBe(resumen.cancionesDistintas);
 
@@ -143,6 +146,38 @@ test.describe("navegación", () => {
   });
 });
 
+test.describe("fotos de artista", () => {
+  test("el ranking usa la foto del artista y no una portada", async ({ page, request }) => {
+    const hoy = new Date().toISOString().slice(0, 10);
+    const rango = await (await request.get(api(`range?from=2010-01-01&to=${hoy}`))).json();
+    const ids = rango.topArtistas.slice(0, 3).map((a) => a.artistId).join(",");
+    const fotos = await (await request.get(`${API}/art/artists?ids=${ids}`)).json();
+    const primera = fotos[rango.topArtistas[0].artistId];
+    expect(primera).toBeTruthy();
+
+    const errores = vigilarErrores(page);
+    await page.goto("/#artistas");
+    const podio = page.locator(".pt-podio");
+    await podio.evaluate((e) => e.scrollIntoView({ block: "center" }));
+    const imagen = page.locator(".pt-podio-item.primero .cover img");
+    await expect(imagen).toHaveAttribute("src", /ab6761610000e5eb|ab67616d/);
+    await expect(imagen).toHaveClass(/lista/);
+    expect(errores).toEqual([]);
+  });
+
+  test("la búsqueda muestra al artista sobre las canciones", async ({ page, request }) => {
+    const hoy = new Date().toISOString().slice(0, 10);
+    const rango = await (await request.get(api(`range?from=2010-01-01&to=${hoy}`))).json();
+    const { nombre, reproducciones } = rango.topArtistas[0];
+    await page.goto("/#/explorar");
+    await page.getByRole("combobox").fill(nombre);
+    const tarjeta = page.locator(".artista-busqueda").first();
+    await expect(tarjeta).toContainText(nombre);
+    await expect(tarjeta).toContainText(reproducciones.toLocaleString("es"));
+    await expect(page.locator(".resultado").first()).toBeVisible();
+  });
+});
+
 test.describe("explorar", () => {
   test("encuentra sin distinguir acentos ni mayúsculas", async ({ page }) => {
     await page.goto("/#/explorar");
@@ -183,8 +218,8 @@ test.describe("explorar", () => {
   });
 
   test("el detalle coincide con la API y desglosa versiones", async ({ page, request }) => {
-    const [hit] = await (await request.get(`${API}/tracks/search?q=Heavy Is the Crown`)).json();
-    const song = await (await request.get(`${API}/tracks/${hit.trackId}`)).json();
+    const [hit] = await (await request.get(api(`tracks/search?q=Heavy Is the Crown`))).json();
+    const song = await (await request.get(api(`tracks/${hit.trackId}`))).json();
     expect(song.versiones.length).toBeGreaterThan(1);
 
     await page.goto(`/#/explorar/${hit.trackId}`);
@@ -213,7 +248,7 @@ test.describe("mi época", () => {
   });
 
   test("un preset genera el año y coincide con la API", async ({ page, request }) => {
-    const rango = await (await request.get(`${API}/range?from=2023-01-01&to=2023-12-31`)).json();
+    const rango = await (await request.get(api(`range?from=2023-01-01&to=2023-12-31`))).json();
     await page.goto("/#/mi-epoca");
     await page.getByRole("button", { name: "2023", exact: true }).click();
     await expect(page).toHaveURL(/from=2023-01-01&to=2023-12-31/);
@@ -223,7 +258,7 @@ test.describe("mi época", () => {
   });
 
   test("cambiar el rango actualiza las estadísticas", async ({ page, request }) => {
-    const r2021 = await (await request.get(`${API}/range?from=2021-01-01&to=2021-12-31`)).json();
+    const r2021 = await (await request.get(api(`range?from=2021-01-01&to=2021-12-31`))).json();
     await page.goto(`/${ANIO}`);
     await expect(page.locator("#wx-intro")).toContainText("2023");
     await page.getByRole("button", { name: "2021", exact: true }).click();
@@ -254,6 +289,16 @@ test.describe("mi época", () => {
     }
     await expect(siguiente).toBeDisabled();
     await expect(page.getByRole("button", { name: "Escena anterior" })).toBeEnabled();
+  });
+
+  test("la escena de artistas toma el color de su portada", async ({ page }) => {
+    await page.goto(`/${ANIO}`);
+    await expect(page.locator("#wx-intro")).toBeVisible();
+    await page.locator("#wx-artistas").evaluate((el) => window.scrollTo(0, el.getBoundingClientRect().top + scrollY));
+    const fondo = () => page.locator("#wx").evaluate((el) => getComputedStyle(el).backgroundColor);
+    // rgb(6, 38, 26) es el color fijo de la escena, el que queda si no hay portada.
+    await expect.poll(fondo, { timeout: 5000 }).not.toBe("rgb(6, 38, 26)");
+    await expect.poll(fondo, { timeout: 5000 }).not.toBe("rgb(7, 23, 14)");
   });
 
   test("las flechas del teclado cambian de escena", async ({ page }, info) => {
@@ -349,7 +394,7 @@ test.describe("movimiento reducido", () => {
   });
 
   test("el contador muestra el valor final directamente", async ({ page, request }) => {
-    const rango = await (await request.get(`${API}/range?from=2023-01-01&to=2023-12-31`)).json();
+    const rango = await (await request.get(api(`range?from=2023-01-01&to=2023-12-31`))).json();
     await page.goto(`/${ANIO}`);
     await expect(page.locator(".wx-cifra")).toHaveText(Math.round(rango.minutos).toLocaleString("es"));
   });
