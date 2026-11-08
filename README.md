@@ -4,12 +4,17 @@
 
 > Proyecto personal de portafolio: ETL en Java, API REST con Spring Boot, SQL Server, front en React y despliegue con Docker Compose detrás de Nginx con HTTPS.
 
-<!-- CAPTURAS: guarda las imágenes en docs/capturas/ con estos nombres y quita el comentario de cada línea. -->
-<!-- ![Portada: cifras de todo el historial con el fondo de portadas](docs/capturas/portada.png) -->
-<!-- ![Mi época: el Wrapped de cualquier rango de fechas, escena por escena](docs/capturas/mi-epoca.gif) -->
-<!-- ![Explorar: el detalle de una canción con su línea de tiempo](docs/capturas/explorar.png) -->
-<!-- ![Comparar: dos perfiles frente a frente](docs/capturas/comparar.png) -->
-<!-- ![Tarjeta para compartir en formato historia](docs/capturas/tarjeta.png) -->
+![Portada: cifras de todo el historial sobre un fondo de portadas](docs/capturas/portada.png)
+
+| Mi época | Explorar |
+|---|---|
+| ![Mi época: escena de artistas de un rango de fechas, con el fondo del color de la foto](docs/capturas/mi-epoca.png) | ![Explorar: detalle de una canción](docs/capturas/explorar.png) |
+
+| Comparar | Tarjeta para compartir |
+|---|---|
+| ![Comparar: dos perfiles frente a frente](docs/capturas/comparar.png) | <img src="docs/capturas/tarjeta.png" alt="Tarjeta en formato historia con el artista número uno, el top 5 y los minutos" width="260"> |
+
+<sub>Los nombres de los perfiles se sustituyeron por «Usuario 1» y «Usuario 2» para las capturas.</sub>
 
 ## Qué puedes hacer
 
