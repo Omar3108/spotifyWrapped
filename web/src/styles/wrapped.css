@@ -240,6 +240,26 @@ main.epoca { max-width: none; margin: 0; padding: 0; }
 }
 .wx-resumen-acciones { margin-top: 28px; display: flex; flex-wrap: wrap; gap: 12px; }
 
+/* ---------- Tarjeta para compartir ---------- */
+.tarjeta-dialogo {
+  width: min(440px, calc(100% - 32px)); max-height: calc(100svh - 32px); padding: 0;
+  color: var(--text); background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+}
+.tarjeta-dialogo::backdrop { background: rgba(0, 0, 0, 0.72); }
+.tarjeta-dialogo[open] { animation: tarjeta-entra 200ms ease-out; }
+@keyframes tarjeta-entra { from { opacity: 0; transform: scale(0.97); } }
+.tarjeta-contenido { display: grid; gap: 16px; padding: 20px; }
+.tarjeta-contenido h2 { font-size: 22px; font-weight: 900; }
+.tarjeta-previa {
+  display: grid; place-items: center; aspect-ratio: 9 / 16; margin: 0 auto; width: min(100%, calc(62svh * 9 / 16));
+  background: var(--surface-2); border-radius: 12px; overflow: hidden; color: var(--muted); text-align: center;
+}
+.tarjeta-previa img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.tarjeta-previa p { padding: 16px; }
+.tarjeta-acciones { display: flex; flex-wrap: wrap; gap: 10px; }
+.tarjeta-acciones > * { flex: 1 1 auto; }
+@media (prefers-reduced-motion: reduce) { .tarjeta-dialogo[open] { animation: none; } }
+
 @media (max-width: 860px) {
   .wx-escena { padding-bottom: 104px; }
   .wx-titulo.anio { font-size: 34vw; }

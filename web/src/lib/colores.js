@@ -111,7 +111,7 @@ export function acentoLegible(rgb) {
   return aHex(aRgb([h, saturacion, claridad]));
 }
 
-function cargarImagen(url) {
+export function cargarImagen(url) {
   return new Promise((resolve, reject) => {
     const imagen = new Image();
     imagen.crossOrigin = "anonymous"; // Sin esto el canvas queda bloqueado para lectura.

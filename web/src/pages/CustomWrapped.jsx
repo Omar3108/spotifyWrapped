@@ -8,7 +8,7 @@ import { useWrappedStats } from "../hooks/useWrappedStats.js";
 import { soloFecha, validarRango } from "../lib/dates.js";
 import "../styles/wrapped.css";
 
-export default function CustomWrapped({ from, to }) {
+export default function CustomWrapped({ from, to, nombre }) {
   const resumen = useApi("summary");
   const primero = soloFecha(resumen.data?.primeraReproduccion);
   const ultimo = soloFecha(resumen.data?.ultimaReproduccion);
@@ -64,7 +64,7 @@ export default function CustomWrapped({ from, to }) {
       )}
 
       {data && !sinDatos && (
-        <WrappedExperience key={`${from}|${to}`} stats={data} derivado={derivado} />
+        <WrappedExperience key={`${from}|${to}`} stats={data} derivado={derivado} nombre={nombre} />
       )}
     </main>
   );

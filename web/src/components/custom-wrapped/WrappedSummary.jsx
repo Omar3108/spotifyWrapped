@@ -5,8 +5,9 @@ import { fechaMedia } from "../../lib/dates.js";
 import { useGSAP } from "../../lib/gsap.js";
 import { Cover } from "../Cover.jsx";
 import { revelar } from "./animaciones.js";
+import { TarjetaCompartir } from "./TarjetaCompartir.jsx";
 
-export function WrappedSummary({ stats, derivado }) {
+export function WrappedSummary({ stats, derivado, nombre }) {
   const raiz = useRef(null);
   const artista = stats.topArtistas[0];
   const cancion = stats.topCanciones[0];
@@ -43,6 +44,7 @@ export function WrappedSummary({ stats, derivado }) {
             document.getElementById("selector")?.scrollIntoView();
           }}>Elegir otra época</a>
           {cancion && <a className="boton-secundario" href={rutaCancion(cancion.trackId)}>Abrir tu canción número uno</a>}
+          <TarjetaCompartir stats={stats} derivado={derivado} nombre={nombre} />
         </div>
       </div>
     </section>

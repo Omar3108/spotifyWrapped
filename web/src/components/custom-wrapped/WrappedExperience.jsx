@@ -25,7 +25,7 @@ export const ESCENAS = [
  * Se monta con key = rango, así que cambiar de fechas destruye la experiencia
  * entera y cada escena limpia sus propias animaciones.
  */
-export function WrappedExperience({ stats, derivado }) {
+export function WrappedExperience({ stats, derivado, nombre }) {
   // Las escenas con una imagen protagonista toman su color; sin él conservan el suyo.
   const artista = useColorPortada(stats.topArtistas[0]?.coverUri ?? null, stats.topArtistas[0]?.artistId);
   const cancion = useColorPortada(stats.topCanciones[0]?.coverUri ?? null);
@@ -45,7 +45,7 @@ export function WrappedExperience({ stats, derivado }) {
       <WrappedSongs canciones={stats.topCanciones} />
       <WrappedAlbums albumes={stats.topAlbumes} />
       <WrappedEvolution stats={stats} derivado={derivado} />
-      <WrappedSummary stats={stats} derivado={derivado} />
+      <WrappedSummary stats={stats} derivado={derivado} nombre={nombre} />
     </div>
   );
 }
