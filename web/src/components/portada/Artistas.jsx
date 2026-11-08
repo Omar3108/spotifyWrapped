@@ -62,7 +62,7 @@ export function Artistas({ artistas }) {
       <ol className="pt-podio">
         {podio.map((a, i) => (
           <li key={a.nombre} className={`pt-podio-item ${i === 0 ? "primero" : ""}`}>
-            <Cover uri={a.coverUri} nombre={a.nombre} />
+            <Cover uri={a.coverUri} artistId={a.artistId} grande nombre={a.nombre} />
             <span className="pt-podio-pos tabular">{i + 1}</span>
             <strong>{a.nombre}</strong>
             <span className="pt-dato">{numero(a.reproducciones)} reproducciones, {numero(a.minutos)} minutos</span>
@@ -75,7 +75,7 @@ export function Artistas({ artistas }) {
           {resto.map((a, i) => (
             <li key={a.nombre} className="pt-fila">
               <span className="pt-fila-pos tabular">{i + 4}</span>
-              <Cover uri={a.coverUri} nombre={a.nombre} />
+              <Cover uri={a.coverUri} artistId={a.artistId} nombre={a.nombre} />
               <span className="pt-fila-cuerpo">
                 <span className="pt-fila-texto">
                   <strong>{a.nombre}</strong>

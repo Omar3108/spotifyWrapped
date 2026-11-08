@@ -1,8 +1,27 @@
 import { describe, expect, it } from "vitest";
 import { interpretarHash, rutaCancion, rutaEpoca } from "../hooks/useHashRoute.js";
 import { duracion, fechaHora, porcentaje } from "../format.js";
+import { versionGrande, versionNormal } from "./covers.js";
 import { crearLru } from "./lru.js";
 import { derivarWrapped, erasDeArtistas, franjaDelDia, tituloDelRango } from "./wrapped.js";
+
+describe("tamaño de las fotos de artista", () => {
+  const normal = "https://image-cdn-fa.spotifycdn.com/image/ab67616100005174abc";
+  const grande = "https://image-cdn-fa.spotifycdn.com/image/ab6761610000e5ebabc";
+  const album = "https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e02abc";
+
+  it("pide la versión grande solo de fotos de artista", () => {
+    expect(versionGrande(normal)).toBe(grande);
+    expect(versionGrande(album)).toBe(album);
+    expect(versionGrande(null)).toBeNull();
+  });
+
+  it("si falla la grande vuelve a la normal, y si falla esa no reintenta", () => {
+    expect(versionNormal(grande)).toBe(normal);
+    expect(versionNormal(normal)).toBeNull();
+    expect(versionNormal(album)).toBeNull();
+  });
+});
 
 describe("interpretarHash", () => {
   it("mantiene los anclas de la portada", () => {

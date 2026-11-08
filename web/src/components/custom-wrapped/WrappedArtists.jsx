@@ -24,7 +24,7 @@ export function WrappedArtists({ artistas }) {
       {primero && (
         <div className="wx-artistas">
           <div className="wx-lider">
-            <Cover uri={primero.coverUri} nombre={primero.nombre} className="wx-lider-portada" />
+            <Cover uri={primero.coverUri} artistId={primero.artistId} grande nombre={primero.nombre} className="wx-lider-portada" />
             <p className="wx-lider-nombre">{primero.nombre}</p>
             <p className="wx-lider-dato">
               {numero(primero.reproducciones)} reproducciones, {numero(primero.minutos)} minutos
@@ -34,7 +34,7 @@ export function WrappedArtists({ artistas }) {
             {resto.map((a, i) => (
               <li key={a.nombre} className="wx-fila">
                 <span className="wx-fila-pos">{i + 2}</span>
-                <Cover uri={a.coverUri} nombre={a.nombre} className="wx-fila-portada" />
+                <Cover uri={a.coverUri} artistId={a.artistId} nombre={a.nombre} className="wx-fila-portada" />
                 <span className="wx-fila-cuerpo">
                   <span className="wx-fila-texto">
                     <strong>{a.nombre}</strong>

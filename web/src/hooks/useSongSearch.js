@@ -3,6 +3,7 @@ import { get } from "../api.js";
 
 export const DEBOUNCE_MS = 280;
 export const LARGO_MINIMO = 2;
+const INACTIVA = { consulta: "", resultados: [], artistas: [], estado: "inactivo" };
 
 /**
  * Busca con debounce y cancela la petición anterior. Conserva los últimos
@@ -12,22 +13,27 @@ export const LARGO_MINIMO = 2;
 export function useSongSearch(texto) {
   const consulta = texto.trim();
   const activa = consulta.length >= LARGO_MINIMO;
-  const [respuesta, setRespuesta] = useState({ consulta: "", resultados: [], estado: "inactivo" });
+  const [respuesta, setRespuesta] = useState(INACTIVA);
 
   useEffect(() => {
     if (!activa) {
-      setRespuesta({ consulta: "", resultados: [], estado: "inactivo" });
+      setRespuesta(INACTIVA);
       return undefined;
     }
     const control = new AbortController();
     setRespuesta((r) => ({ ...r, estado: "cargando" }));
     const temporizador = setTimeout(async () => {
       try {
-        const resultados = await get("tracks/search", { q: consulta, limit: 12 }, { signal: control.signal });
-        setRespuesta({ consulta, resultados, estado: "listo" });
+        const opciones = { signal: control.signal };
+        // Los artistas son un añadido: si fallan, la búsqueda de canciones sigue sirviendo.
+        const [resultados, artistas] = await Promise.all([
+          get("tracks/search", { q: consulta, limit: 12 }, opciones),
+          get("artists/search", { q: consulta }, opciones).catch(() => []),
+        ]);
+        setRespuesta({ consulta, resultados, artistas, estado: "listo" });
       } catch (error) {
         if (error.name !== "AbortError") {
-          setRespuesta({ consulta, resultados: [], estado: "error" });
+          setRespuesta({ consulta, resultados: [], artistas: [], estado: "error" });
         }
       }
     }, DEBOUNCE_MS);
@@ -38,5 +44,5 @@ export function useSongSearch(texto) {
     };
   }, [consulta, activa]);
 
-  return activa ? respuesta : { consulta: "", resultados: [], estado: "inactivo" };
+  return activa ? respuesta : INACTIVA;
 }

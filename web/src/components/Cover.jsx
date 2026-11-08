@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { pedirPortada } from "../lib/covers.js";
+import { pedirImagen, versionGrande, versionNormal } from "../lib/covers.js";
 
 function iniciales(nombre) {
   const palabras = (nombre ?? "").replace(/[^\p{L}\p{N} ]/gu, "").trim().split(/\s+/);
@@ -14,11 +14,12 @@ function tono(nombre) {
 }
 
 /**
- * Portada real si Spotify la tiene; si no, una generada a partir del nombre.
+ * Con artistId, la foto del artista (`grande` si se muestra a más de 320 px). Si no, la portada real si Spotify la tiene,
+ * y si tampoco, una generada a partir del nombre.
  * La generada se ve desde el primer momento, así que nunca hay huecos ni saltos
  * de layout, y las estadísticas no dependen de esta carga.
  */
-export function Cover({ uri, nombre, className = "", flipId }) {
+export function Cover({ uri, artistId, grande = false, nombre, className = "", flipId }) {
   const [src, setSrc] = useState(null);
   const [cargada, setCargada] = useState(false);
 
@@ -26,11 +27,11 @@ export function Cover({ uri, nombre, className = "", flipId }) {
     let vigente = true;
     setSrc(null);
     setCargada(false);
-    pedirPortada(uri).then((url) => vigente && setSrc(url));
+    pedirImagen(uri, artistId).then((url) => vigente && setSrc(grande ? versionGrande(url) : url));
     return () => {
       vigente = false;
     };
-  }, [uri]);
+  }, [uri, artistId, grande]);
 
   const h = tono(nombre);
   return (
@@ -49,7 +50,7 @@ export function Cover({ uri, nombre, className = "", flipId }) {
           decoding="async"
           className={cargada ? "lista" : ""}
           onLoad={() => setCargada(true)}
-          onError={() => setSrc(null)}
+          onError={() => setSrc(versionNormal)}
         />
       )}
     </span>

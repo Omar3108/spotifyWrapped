@@ -11,7 +11,7 @@ export function SongSearch({ onSelect }) {
   const [activo, setActivo] = useState(-1);
   const campo = useRef(null);
   const contenedor = useRef(null);
-  const { consulta, resultados, estado } = useSongSearch(texto);
+  const { consulta, resultados, artistas, estado } = useSongSearch(texto);
 
   const hayConsulta = texto.trim().length >= LARGO_MINIMO;
   const visible = abierto && hayConsulta;
@@ -84,6 +84,7 @@ export function SongSearch({ onSelect }) {
           <SongResults
             consulta={consulta || texto.trim()}
             resultados={resultados}
+            artistas={artistas}
             estado={estado}
             activo={activo}
             onHover={setActivo}
