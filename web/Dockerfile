@@ -5,6 +5,7 @@ COPY web/package.json web/package-lock.json ./
 RUN npm ci
 COPY web/index.html web/vite.config.js ./
 COPY web/src ./src
+COPY web/public ./public
 ENV VITE_API_BASE=/api/wrapped
 RUN npm run build
 
