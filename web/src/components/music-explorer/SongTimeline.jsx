@@ -3,8 +3,11 @@ import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YA
 import { useApi } from "../../hooks.js";
 import { etiquetaPeriodo } from "../../lib/dates.js";
 import { CON_MOVIMIENTO, gsap, useGSAP } from "../../lib/gsap.js";
-import { CUADRICULA, EJE, VERDE, tooltipProps } from "../chartStyle.js";
+import { CUADRICULA, EJE, tooltipProps } from "../chartStyle.js";
 import { Panel } from "../ui.jsx";
+
+// Sigue al acento de la portada; sin color, el verde de siempre.
+const ACENTO = "var(--green-bright, #1DB954)";
 
 export function SongTimeline({ trackId, scope }) {
   const raiz = useRef(null);
@@ -45,8 +48,8 @@ export function SongTimeline({ trackId, scope }) {
             <AreaChart data={serie} margin={{ top: 8, right: 8, left: -22, bottom: 0 }}>
               <defs>
                 <linearGradient id="relleno-cancion" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={VERDE} stopOpacity={0.45} />
-                  <stop offset="100%" stopColor={VERDE} stopOpacity={0} />
+                  <stop offset="0%" stopColor={ACENTO} stopOpacity={0.45} />
+                  <stop offset="100%" stopColor={ACENTO} stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid stroke={CUADRICULA} vertical={false} />
@@ -54,7 +57,7 @@ export function SongTimeline({ trackId, scope }) {
               <YAxis tick={EJE} tickLine={false} axisLine={false} allowDecimals={false} />
               <Tooltip {...tooltipProps} formatter={(v) => [v, "Reproducciones"]} />
               <Area
-                type="monotone" dataKey="reproducciones" stroke={VERDE} strokeWidth={2}
+                type="monotone" dataKey="reproducciones" stroke={ACENTO} strokeWidth={2}
                 fill="url(#relleno-cancion)" isAnimationActive={false}
               />
             </AreaChart>

@@ -6,8 +6,17 @@
 main.explorar {
   max-width: none; margin: 0;
   padding: clamp(40px, 8vh, 88px) max(16px, calc((100% - 1040px) / 2)) 96px;
-  min-height: 80vh;
+  min-height: calc(100svh - 49px);
   background: radial-gradient(900px 460px at 18% -8%, rgba(29, 185, 84, 0.16), transparent 70%);
+  transition: background-color 600ms ease;
+}
+/* El color sale de la portada; hacia abajo se oscurece para leer con comodidad. */
+main.explorar.con-color {
+  background-color: var(--fondo);
+  background-image: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.4) 900px);
+}
+@media (prefers-reduced-motion: reduce) {
+  main.explorar { transition: none; }
 }
 
 .explorar-cabecera h1 {
@@ -23,7 +32,7 @@ main.explorar {
   background: none; border: 0; border-bottom: 2px solid var(--border); border-radius: 0;
   transition: border-color 160ms ease;
 }
-.buscador input::placeholder { color: #8c8c93; }
+.buscador input::placeholder { color: var(--muted); }
 .buscador input:focus { outline: none; border-color: var(--green-bright); }
 .buscador input::-webkit-search-cancel-button { filter: invert(0.7); }
 
@@ -36,6 +45,11 @@ main.explorar {
 .buscador-aviso { padding: 20px 16px; color: var(--muted); line-height: 1.5; }
 .buscador-cargando { height: 96px; }
 
+.artistas-busqueda { list-style: none; margin: 0; padding: 6px 6px 0; }
+.artista-busqueda {
+  display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; gap: 12px; align-items: center;
+  padding: 8px; border-bottom: 1px solid var(--border);
+}
 .resultados { list-style: none; margin: 0; padding: 6px; }
 .resultado {
   display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; gap: 12px; align-items: center;
@@ -131,12 +145,12 @@ main.explorar {
 .versiones-lista small { color: var(--muted); font-weight: 400; font-size: 14px; margin-left: 6px; }
 .versiones-lista span { color: var(--muted); font-variant-numeric: tabular-nums; }
 
-.detalle-nota { margin-top: 40px; max-width: 62ch; color: #8c8c93; font-size: 14px; line-height: 1.5; }
+.detalle-nota { margin-top: 40px; max-width: 62ch; color: var(--muted); font-size: 14px; line-height: 1.5; }
 
 @media (max-width: 720px) {
   .detalle-hero { grid-template-columns: minmax(0, 1fr); }
   .detalle-portada { width: min(58vw, 220px); }
   .detalle-cifras { grid-template-columns: minmax(0, 1fr); }
-  .resultado { grid-template-columns: 44px minmax(0, 1fr) auto; }
+  .resultado, .artista-busqueda { grid-template-columns: 44px minmax(0, 1fr) auto; }
   .resultado-portada { width: 44px; }
 }

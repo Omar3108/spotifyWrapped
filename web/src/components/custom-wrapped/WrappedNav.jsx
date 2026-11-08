@@ -52,12 +52,14 @@ export function WrappedNav({ escenas }) {
     () => {
       gsap.to(document.getElementById("wx"), {
         backgroundColor: escenas[activa].fondo,
+        "--green-bright": escenas[activa].acento,
         duration: quiereMovimiento() ? 0.7 : 0,
         ease: "power1.inOut",
         overwrite: "auto",
       });
     },
-    { dependencies: [activa] }
+    // El color de la portada puede llegar con la escena ya activa.
+    { dependencies: [activa, escenas[activa].fondo, escenas[activa].acento] }
   );
 
   const irA = contextSafe((i) => {

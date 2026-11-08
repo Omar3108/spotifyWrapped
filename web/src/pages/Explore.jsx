@@ -12,6 +12,7 @@ export default function Explore({ trackId }) {
   const raiz = useRef(null);
   const estadoFlip = useRef(null);
   const [previa, setPrevia] = useState(null);
+  const [color, setColor] = useState(null);
 
   const resumen = useApi("summary");
   const r = resumen.data;
@@ -46,18 +47,24 @@ export default function Explore({ trackId }) {
   );
 
   useEffect(() => {
-    if (!trackId) setPrevia(null);
+    if (trackId) return;
+    setPrevia(null);
+    setColor(null);
   }, [trackId]);
 
   return (
-    <main ref={raiz} className="explorar">
+    <main
+      ref={raiz}
+      className={`explorar ${color ? "con-color" : ""}`}
+      style={color ? { "--fondo": color.fondo, "--green-bright": color.acento } : undefined}
+    >
       <header className="explorar-cabecera">
         <h1>Busca cualquier canción de tu historial</h1>
         <SongSearch onSelect={seleccionar} />
       </header>
 
       {trackId ? (
-        <SongDetails key={trackId} trackId={trackId} previa={previa?.trackId === trackId ? previa : null} />
+        <SongDetails key={trackId} trackId={trackId} previa={previa?.trackId === trackId ? previa : null} onColor={setColor} />
       ) : (
         <Sugerencias estado={top} onSelect={seleccionar} />
       )}

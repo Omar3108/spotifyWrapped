@@ -1,13 +1,14 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { duracion, fechaHora, numero, porcentaje } from "../../format.js";
 import { useApi } from "../../hooks.js";
+import { useColorPortada } from "../../hooks/useColorPortada.js";
 import { CON_MOVIMIENTO, gsap, useGSAP } from "../../lib/gsap.js";
 import { AnimatedNumber } from "../AnimatedNumber.jsx";
 import { Cover } from "../Cover.jsx";
 import { Panel } from "../ui.jsx";
 import { SongTimeline } from "./SongTimeline.jsx";
 
-export function SongDetails({ trackId, previa }) {
+export function SongDetails({ trackId, previa, onColor }) {
   const raiz = useRef(null);
   // "song" agrega todas las versiones; un número limita a esa versión.
   const [version, setVersion] = useState(null);
@@ -31,6 +32,12 @@ export function SongDetails({ trackId, previa }) {
   );
 
   const cabecera = d ?? previa;
+
+  // Mientras se decide (undefined) no se avisa: el fondo anterior se queda sin parpadear.
+  const color = useColorPortada(cabecera ? cabecera.spotifyUri ?? null : undefined);
+  useEffect(() => {
+    if (color !== undefined) onColor?.(color);
+  }, [color, onColor]);
 
   return (
     <article ref={raiz} className="detalle" aria-live="polite">
