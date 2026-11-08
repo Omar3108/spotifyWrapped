@@ -1,7 +1,7 @@
 import { numero } from "../format.js";
 import { cargarImagen, colorDePortada } from "./colores.js";
 import { pedirImagen, versionGrande } from "./covers.js";
-import { fechaMedia } from "./dates.js";
+import { etiquetaPeriodo, fechaMedia } from "./dates.js";
 import { tituloDelRango } from "./wrapped.js";
 
 // Formato de historia (9:16), el que aceptan Instagram, WhatsApp y TikTok sin recortar.
@@ -13,9 +13,22 @@ const ACENTO_POR_DEFECTO = "#1ed760";
 const TENUE = "rgba(255, 255, 255, 0.72)";
 const FUENTE = "Inter, system-ui, sans-serif";
 
-/** Título de la tarjeta: un año completo se lee como un número; otro rango, como fechas. */
+/**
+ * Título de la tarjeta, lo más corto posible sin perder información:
+ *   año completo          2024
+ *   mismo mes             1 – 15 mar 2024
+ *   mismo año             1 mar – 31 may 2024
+ *   años distintos        7 nov 2025 – 6 nov 2026
+ */
 export function textoDelRango(from, to) {
-  return tituloDelRango(from, to)?.anio ?? `${fechaMedia(from)} – ${fechaMedia(to)}`;
+  const anio = tituloDelRango(from, to)?.anio;
+  if (anio) return anio;
+  const [a1, m1, d1] = from.split("-");
+  const [a2, m2] = to.split("-");
+  if (a1 !== a2) return `${fechaMedia(from)} – ${fechaMedia(to)}`;
+  if (from === to) return fechaMedia(from);
+  if (m1 === m2) return `${Number(d1)} – ${fechaMedia(to)}`;
+  return `${etiquetaPeriodo(from)} – ${fechaMedia(to)}`;
 }
 
 /** Nombre de archivo seguro: sin tildes, espacios ni símbolos. */
@@ -45,11 +58,11 @@ function texto(ctx, contenido, x, y, { peso = 700, tamano = 40, color = "#fff", 
   ctx.fillText(recortar((t) => ctx.measureText(t).width, contenido, ancho), x, y);
 }
 
-/** El nombre del artista principal: baja de tamaño antes de recortarse. */
-function titular(ctx, contenido, x, y, ancho) {
-  let tamano = 92;
+/** Texto grande que baja de tamaño antes de recortarse (el nombre del artista, el rango de fechas). */
+function titular(ctx, contenido, x, y, ancho, { maximo = 92, minimo = 56 } = {}) {
+  let tamano = maximo;
   fuente(ctx, 900, tamano);
-  while (tamano > 56 && ctx.measureText(contenido).width > ancho) {
+  while (tamano > minimo && ctx.measureText(contenido).width > ancho) {
     tamano -= 4;
     fuente(ctx, 900, tamano);
   }
@@ -132,7 +145,7 @@ export async function crearTarjeta({ stats, derivado, nombre }) {
 
   texto(ctx, "MI WRAPPED", MARGEN, 136, { peso: 900, tamano: 30, color: acento });
   if (nombre) texto(ctx, nombre, ANCHO - MARGEN, 136, { peso: 700, tamano: 30, color: TENUE, alinear: "right", ancho: 420 });
-  texto(ctx, textoDelRango(stats.from, stats.to), MARGEN, 236, { peso: 900, tamano: 76 });
+  titular(ctx, textoDelRango(stats.from, stats.to), MARGEN, 236, ANCHO - 2 * MARGEN, { maximo: 76, minimo: 48 });
 
   const lado = 600;
   const xImagen = (ANCHO - lado) / 2;

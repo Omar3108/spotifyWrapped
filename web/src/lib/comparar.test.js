@@ -60,9 +60,12 @@ describe("ventaja entre descubrimientos", () => {
 });
 
 describe("tarjeta para compartir", () => {
-  it("un año completo se titula con el año y otro rango con sus fechas", () => {
+  it("el título del rango es lo más corto posible y no repite el año", () => {
     expect(textoDelRango("2024-01-01", "2024-12-31")).toBe("2024");
-    expect(textoDelRango("2024-03-01", "2024-05-31")).toMatch(/2024.*–.*2024/);
+    expect(textoDelRango("2024-03-01", "2024-03-15")).toBe("1 – 15 mar 2024");
+    expect(textoDelRango("2024-03-01", "2024-05-31")).toBe("1 mar – 31 may 2024");
+    expect(textoDelRango("2025-11-07", "2026-11-06")).toBe("7 nov 2025 – 6 nov 2026");
+    expect(textoDelRango("2024-03-01", "2024-03-01")).toBe("1 mar 2024");
   });
 
   it("el nombre de archivo no lleva tildes, espacios ni símbolos", () => {
